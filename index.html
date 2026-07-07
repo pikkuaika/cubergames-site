@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="fi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Cuber Games</title>
+
+  <link rel="icon"
+      type="image/png"
+      href="https://drive.google.com/thumbnail?id=18p38YwIT67wASXum4QtCUIxD-uFBL3HO&sz=w256">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Raleway:wght@400;700;900&display=swap"
+    rel="stylesheet"
+  >
+
+  <style>
+    body {
+      font-family: 'Raleway', sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(37, 99, 235, 0.25), transparent 35%),
+        radial-gradient(circle at bottom right, rgba(14, 165, 233, 0.18), transparent 35%),
+        #000;
+      overflow-x: hidden;
+    }
+
+    .neon-line {
+      height: 3px;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        #ffffff,
+        #60a5fa,
+        #ffffff,
+        transparent
+      );
+      box-shadow: 0 0 18px rgba(96, 165, 250, 0.7);
+    }
+
+    .blue-glow {
+      box-shadow:
+        0 0 30px rgba(59, 130, 246, 0.45),
+        0 0 80px rgba(14, 165, 233, 0.25);
+    }
+
+    .glass {
+      background: rgba(255, 255, 255, 0.055);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(12px);
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .fade-up {
+      animation: fadeUp 0.9s ease forwards;
+    }
+
+    .fade-up-delay {
+      opacity: 0;
+      animation: fadeUp 0.9s ease 0.25s forwards;
+    }
+
+    .fade-up-delay2 {
+      opacity: 0;
+      animation: fadeUp 0.9s ease 0.5s forwards;
+    }
+
+    .fade-up-delay3 {
+      opacity: 0;
+      animation: fadeUp 0.9s ease 0.75s forwards;
+    }
+  </style>
+</head>
+
+<body class="text-white">
+
+<main class="w-full">
+
+<!-- ================= HERO ================= -->
+
+<section class="w-full py-10">
+
+    <!-- Logo -->
+
+    <div class="max-w-7xl mx-auto px-6">
+
+        <img
+            class="w-full max-w-5xl mx-auto fade-up"
+            src="https://drive.google.com/thumbnail?id=1OpL4VN51L1nx6lDY8I2bJ6nwE06xJ5VV&sz=w2000"
+            alt="Cuber Games Logo">
+
+        <div class="neon-line mt-6 mb-16"></div>
+
+    </div>
+
+
+    <!-- Hero Content -->
+
+    <div class="max-w-7xl mx-auto px-6">
+
+        <div class="grid lg:grid-cols-2 gap-20 items-center">
+
+            <!-- VIDEO -->
+
+<div class="flex justify-center fade-up-delay">
+
+    <video
+        class="w-full max-w-[360px] rounded-3xl blue-glow"
+        autoplay
+        muted
+        loop
+        playsinline
+        preload="auto"
+    >
+        <source
+            src="https://raw.githubusercontent.com/pikkuaika/CuberGameplay/main/gifi.mp4"
+            type="video/mp4">
+
+        Your browser does not support the video tag.
+    </video>
+
+</div>
+
+
+            <!-- RIGHT SIDE -->
+
+            <div class="text-center lg:text-left fade-up-delay2">
+
+                <h1 class="text-6xl md:text-7xl font-black tracking-[0.25em] mb-8">
+
+                    CUBER
+
+                </h1>
+
+                <h2 class="text-4xl md:text-5xl font-black leading-tight mb-8">
+
+                    HOW FAR<br>
+                    CAN YOU GET?
+
+                </h2>
+
+                <p class="text-xl text-slate-300 mb-12 max-w-lg">
+
+                </p>
+
+                <a
+                    href="https://play.google.com/store/apps/details?id=YOUR_APP_ID"
+                    target="_blank">
+
+                    <img
+                        class="w-64 hover:scale-105 duration-300"
+                        src="https://drive.google.com/thumbnail?id=1Bs5lkBbKIyyKvlcF13wCbC08-9WBUZ4y&sz=w800"
+                        alt="Google Play">
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<div class="neon-line max-w-6xl mx-auto"></div>
+
+<!-- ================= FEATURES ================= -->
+
+<section class="py-24 px-6">
+
+    <div class="max-w-6xl mx-auto">
+
+        <h2 class="text-center text-5xl font-black tracking-[0.2em] mb-16">
+
+            FEATURES
+
+        </h2>
+
+        <div class="grid md:grid-cols-3 gap-8">
+
+            <div class="glass rounded-3xl p-8 text-center">
+
+                <div class="text-6xl mb-6">
+                    ⚡
+                </div>
+
+                <h3 class="text-2xl font-black mb-4">
+
+                    FAST GAMEPLAY
+
+                </h3>
+
+                <p class="text-slate-300">
+
+                    Easy to start. Hard to master. Speed keeps increasing.
+
+                </p>
+
+            </div>
+
+
+            <div class="glass rounded-3xl p-8 text-center">
+
+                <div class="text-6xl mb-6">
+                    🎯
+                </div>
+
+                <h3 class="text-2xl font-black mb-4">
+
+                    COLLECT CUBES
+
+                </h3>
+
+                <p class="text-slate-300">
+
+                    Collect cubes to increase your score.
+
+                </p>
+
+            </div>
+
+
+            <div class="glass rounded-3xl p-8 text-center">
+
+                <div class="text-6xl mb-6">
+                    🏆
+                </div>
+
+                <h3 class="text-2xl font-black mb-4">
+
+                    HIGH SCORES
+
+                </h3>
+
+                <p class="text-slate-300">
+
+                    Challenge yourself and beat your best score.
+
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+<div class="neon-line max-w-6xl mx-auto"></div>
+
+<!-- ================= DOWNLOAD ================= -->
+
+<section class="py-24 px-6 text-center">
+
+    <h2 class="text-5xl font-black mb-8">
+
+        DOWNLOAD NOW
+
+    </h2>
+
+    <p class="text-xl text-slate-300 mb-12">
+
+        Available on Google Play.
+
+    </p>
+
+    <a
+        href="https://play.google.com/store/apps/details?id=YOUR_APP_ID"
+        target="_blank">
+
+        <img
+            class="w-72 mx-auto hover:scale-105 duration-300"
+            src="https://drive.google.com/thumbnail?id=1Bs5lkBbKIyyKvlcF13wCbC08-9WBUZ4y&sz=w800"
+            alt="Google Play">
+
+    </a>
+
+</section>
+
+<!-- ================= FOOTER ================= -->
+
+<footer class="border-t border-slate-800 py-12 mt-20">
+
+    <div class="max-w-6xl mx-auto px-6">
+
+        <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+
+            <div>
+
+                <h3 class="text-2xl font-black">
+
+                    CUBER GAMES
+
+                </h3>
+
+                <p class="text-slate-500">
+
+                    Independent Game Studio
+
+                </p>
+
+            </div>
+
+
+        </div>
+
+        <div class="text-center text-slate-600 mt-10">
+
+            © 2026 Cuber Games
+
+        </div>
+
+    </div>
+
+</footer>
+
+</main>
+
+</body>
+
+</html>
