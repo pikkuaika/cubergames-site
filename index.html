@@ -2,7 +2,7 @@
 <html lang="fi">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
   <title>Cuber Games</title>
 
@@ -103,6 +103,115 @@
       opacity: 0;
       animation: fadeUp 0.9s ease 0.5s forwards;
     }
+  
+    /* ================= TV / LARGE-SCREEN FIXES ================= */
+
+    html {
+      width: 100%;
+      min-width: 320px;
+      background: #000;
+    }
+
+    body {
+      width: 100%;
+      min-height: 100vh;
+    }
+
+    main {
+      width: 100%;
+    }
+
+    /* Keep media from overflowing on older TV browsers. */
+    img,
+    video {
+      max-width: 100%;
+      height: auto;
+    }
+
+    /* Force game cards to size correctly even when a TV browser reports
+       an unusual CSS viewport width. */
+    .games-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 2rem;
+      align-items: stretch;
+    }
+
+    .games-grid > .game-card {
+      width: 100%;
+      min-width: 0;
+      height: 100%;
+    }
+
+    /* Large TV screens. */
+    @media screen and (min-width: 1200px) {
+      body {
+        font-size: 18px;
+      }
+
+      .tv-max {
+        max-width: 1600px;
+      }
+
+      .game-card {
+        padding: 2.2rem;
+      }
+
+      .game-video {
+        max-width: 420px;
+      }
+    }
+
+    /* Some smart-TV browsers report a narrow viewport despite using a 16:9
+       physical display. Prefer a 2-column layout instead of four ultra-thin
+       cards in that case. */
+    @media screen and (max-width: 1199px) {
+      .games-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    /* Tablets / smaller embedded browsers. */
+    @media screen and (max-width: 760px) {
+      .games-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Wide TV landscape heuristic. */
+    @media screen and (min-aspect-ratio: 16/10) and (min-width: 900px) {
+      .games-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .game-card h3 {
+        overflow-wrap: anywhere;
+      }
+    }
+
+    /* Prevent cards from becoming abnormally tall because of constrained
+       width on TV browsers. */
+    .game-card p {
+      max-width: 32rem;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .game-card a {
+      white-space: nowrap;
+    }
+
+    /* Snake showcase is intentionally TV-focused. */
+    .snake-showcase {
+      width: 100%;
+    }
+
+    @media screen and (min-width: 1200px) {
+      .snake-showcase {
+        min-height: 560px;
+      }
+    }
+
   </style>
 </head>
 
@@ -115,7 +224,7 @@
 
   <section class="w-full py-10">
 
-    <div class="max-w-7xl mx-auto px-6">
+    <div class="max-w-7xl tv-max mx-auto px-6">
 
       <img
         class="w-full max-w-5xl mx-auto fade-up"
@@ -146,7 +255,7 @@
 
   <section class="py-24 px-6">
 
-    <div class="max-w-7xl mx-auto">
+    <div class="max-w-7xl tv-max mx-auto">
 
       <div class="grid lg:grid-cols-2 gap-20 items-center">
 
@@ -222,7 +331,7 @@
 
   <section class="py-24 px-6">
 
-    <div class="max-w-7xl mx-auto">
+    <div class="max-w-7xl tv-max mx-auto">
 
       <div class="grid lg:grid-cols-2 gap-20 items-center">
 
@@ -325,7 +434,7 @@
 
   <section class="py-24 px-6">
 
-    <div class="max-w-7xl mx-auto">
+    <div class="max-w-7xl tv-max mx-auto">
 
       <div class="grid lg:grid-cols-2 gap-20 items-center">
 
@@ -506,14 +615,14 @@
 
   <section class="py-24 px-6">
 
-    <div class="max-w-7xl mx-auto">
+    <div class="max-w-7xl tv-max mx-auto">
 
       <div class="grid lg:grid-cols-2 gap-20 items-center">
 
         <div class="flex justify-center">
 
           <div
-            class="w-full max-w-[460px] min-h-[520px] rounded-3xl blue-glow glass flex flex-col items-center justify-center px-8 text-center"
+            class="snake-showcase w-full max-w-[460px] min-h-[520px] rounded-3xl blue-glow glass flex flex-col items-center justify-center px-8 text-center"
             style="
               background:
                 radial-gradient(circle at 50% 30%, rgba(168,85,247,0.18), transparent 35%),
@@ -619,14 +728,14 @@
 
   <section class="py-24 px-6">
 
-    <div class="max-w-7xl mx-auto">
+    <div class="max-w-7xl tv-max mx-auto">
 
       <h2 class="text-center text-5xl font-black tracking-[0.2em] mb-16">
         GAMES
       </h2>
 
 
-      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div class="games-grid">
 
 
         <!-- CUBER -->
