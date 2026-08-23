@@ -71,6 +71,13 @@
       border-color: rgba(255,255,255,0.3);
     }
 
+    .game-video {
+      width: 100%;
+      max-width: 360px;
+      border-radius: 1.5rem;
+      display: block;
+    }
+
     @keyframes fadeUp {
       from {
         opacity: 0;
@@ -103,7 +110,8 @@
 
 <main class="w-full">
 
-  <!-- ================= HEADER / BRAND ================= -->
+
+  <!-- ================= HEADER ================= -->
 
   <section class="w-full py-10">
 
@@ -118,6 +126,7 @@
       <div class="neon-line mt-6 mb-16"></div>
 
       <div class="text-center max-w-3xl mx-auto fade-up-delay">
+
         <h1 class="text-4xl md:text-6xl font-black tracking-[0.15em] mb-6">
           OUR GAMES
         </h1>
@@ -125,6 +134,7 @@
         <p class="text-xl text-slate-300">
           Simple games. Clean design. Built for mobile.
         </p>
+
       </div>
 
     </div>
@@ -143,7 +153,7 @@
         <div class="flex justify-center">
 
           <video
-            class="w-full max-w-[360px] rounded-3xl blue-glow"
+            class="game-video blue-glow"
             autoplay
             muted
             loop
@@ -151,7 +161,7 @@
             preload="auto"
           >
             <source
-              src="/video.mp4"
+              src="https://raw.githubusercontent.com/pikkuaika/CuberGameplay/main/gifi.mp4"
               type="video/mp4"
             >
 
@@ -159,6 +169,7 @@
           </video>
 
         </div>
+
 
         <div class="text-center lg:text-left">
 
@@ -180,6 +191,7 @@
           </p>
 
           <div class="flex justify-center lg:justify-start">
+
             <a
               href="https://play.google.com/store/apps/details?id=com.cubergames.cuber"
               target="_blank"
@@ -191,6 +203,7 @@
                 alt="Get Cuber on Google Play"
               >
             </a>
+
           </div>
 
         </div>
@@ -205,7 +218,6 @@
   <div class="neon-line max-w-6xl mx-auto"></div>
 
 
-
   <!-- ================= MAGNET DROP ================= -->
 
   <section class="py-24 px-6">
@@ -214,67 +226,90 @@
 
       <div class="grid lg:grid-cols-2 gap-20 items-center">
 
+
+        <!-- MAGNET DROP TEXT -->
+
         <div class="text-center lg:text-left order-2 lg:order-1">
 
           <div class="text-cyan-400 font-bold tracking-[0.25em] mb-4">
             ARCADE
           </div>
 
-          <div class="flex justify-center lg:justify-start mb-6">
+
+          <div class="flex justify-center lg:justify-start mb-7">
+
             <img
-              src="/icon.png"
+              src="icon.png"
               alt="Magnet Drop"
               class="w-28 h-28 rounded-3xl blue-glow object-cover"
             >
+
           </div>
+
 
           <h2 class="text-5xl md:text-7xl font-black tracking-[0.12em] mb-6">
             MAGNET DROP
           </h2>
 
+
           <h3 class="text-3xl md:text-4xl font-black leading-tight mb-6">
             DROP. DODGE. SURVIVE.
           </h3>
 
+
           <p class="text-lg text-slate-300 mb-10 max-w-xl">
-            Guide the magnetic ball through a fast-moving obstacle course,
-            survive as long as you can and chase a new high score.
+            Guide the magnetic ball through a fast-moving obstacle course.
+            Dodge the platforms, survive as long as possible and chase your
+            highest score.
           </p>
 
+
           <div class="flex justify-center lg:justify-start">
+
             <a
               href="https://play.google.com/store/apps/details?id=com.cubergames.magnetdrop"
               target="_blank"
               rel="noopener noreferrer"
             >
+
               <img
                 class="w-64 hover:scale-105 duration-300"
                 src="https://drive.google.com/thumbnail?id=1Bs5lkBbKIyyKvlcF13wCbC08-9WBUZ4y&sz=w800"
                 alt="Get Magnet Drop on Google Play"
               >
+
             </a>
+
           </div>
 
         </div>
 
-<div class="flex justify-center order-1 lg:order-2">
 
-  <video
-    class="w-full max-w-[360px] rounded-3xl blue-glow object-cover"
-    autoplay
-    muted
-    loop
-    playsinline
-    preload="auto"
-  >
-    <source
-      src="/video.mp4"
-      type="video/mp4"
-    >
-    Your browser does not support the video tag.
-  </video>
+        <!-- MAGNET DROP GAMEPLAY VIDEO -->
 
-</div>
+        <div class="flex justify-center order-1 lg:order-2">
+
+          <video
+            id="magnetDropVideo"
+            class="game-video blue-glow"
+            autoplay
+            muted
+            loop
+            playsinline
+            preload="auto"
+          >
+
+            <source
+              src="video.mp4"
+              type="video/mp4"
+            >
+
+            Your browser does not support the video tag.
+
+          </video>
+
+        </div>
+
 
       </div>
 
@@ -293,6 +328,7 @@
     <div class="max-w-7xl mx-auto">
 
       <div class="grid lg:grid-cols-2 gap-20 items-center">
+
 
         <div class="text-center lg:text-left order-2 lg:order-1">
 
@@ -317,38 +353,61 @@
             Play against the computer or challenge a friend on the same device.
           </p>
 
+
           <div class="grid sm:grid-cols-2 gap-4 mb-10 max-w-xl">
 
             <div class="glass rounded-2xl p-5">
-              <div class="text-3xl mb-2">♞</div>
-              <div class="font-black">VS COMPUTER</div>
+
+              <div class="text-3xl mb-2">
+                ♞
+              </div>
+
+              <div class="font-black">
+                VS COMPUTER
+              </div>
+
               <div class="text-sm text-slate-400 mt-1">
                 Challenge the engine
               </div>
+
             </div>
 
+
             <div class="glass rounded-2xl p-5">
-              <div class="text-3xl mb-2">♚</div>
-              <div class="font-black">TWO PLAYERS</div>
+
+              <div class="text-3xl mb-2">
+                ♚
+              </div>
+
+              <div class="font-black">
+                TWO PLAYERS
+              </div>
+
               <div class="text-sm text-slate-400 mt-1">
                 Play on the same device
               </div>
+
             </div>
 
           </div>
 
+
           <div class="flex justify-center lg:justify-start">
+
             <a
               href="https://play.google.com/store/apps/details?id=app.emergent.chess"
               target="_blank"
               rel="noopener noreferrer"
             >
+
               <img
                 class="w-64 hover:scale-105 duration-300"
                 src="https://drive.google.com/thumbnail?id=1Bs5lkBbKIyyKvlcF13wCbC08-9WBUZ4y&sz=w800"
                 alt="Get Chess on Google Play"
               >
+
             </a>
+
           </div>
 
         </div>
@@ -377,29 +436,176 @@
               A TIMELESS GAME
             </div>
 
+
             <div class="w-full glass rounded-2xl p-5 text-left mb-5">
+
               <div class="flex gap-4 items-center">
-                <div class="text-4xl">♔</div>
-                <div>
-                  <div class="text-xl font-bold">Two Players</div>
-                  <div class="text-slate-400">Hot-seat · same device</div>
+
+                <div class="text-4xl">
+                  ♔
                 </div>
+
+                <div>
+
+                  <div class="text-xl font-bold">
+                    Two Players
+                  </div>
+
+                  <div class="text-slate-400">
+                    Hot-seat · same device
+                  </div>
+
+                </div>
+
               </div>
+
             </div>
 
+
             <div class="w-full glass rounded-2xl p-5 text-left">
+
               <div class="flex gap-4 items-center">
-                <div class="text-4xl">♞</div>
-                <div>
-                  <div class="text-xl font-bold">VS Computer</div>
-                  <div class="text-slate-400">Play against the engine</div>
+
+                <div class="text-4xl">
+                  ♞
                 </div>
+
+                <div>
+
+                  <div class="text-xl font-bold">
+                    VS Computer
+                  </div>
+
+                  <div class="text-slate-400">
+                    Play against the engine
+                  </div>
+
+                </div>
+
               </div>
+
             </div>
 
           </div>
 
         </div>
+
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <div class="neon-line max-w-6xl mx-auto"></div>
+
+
+
+  <!-- ================= CUBER SNAKE 360 ================= -->
+
+  <section class="py-24 px-6">
+
+    <div class="max-w-7xl mx-auto">
+
+      <div class="grid lg:grid-cols-2 gap-20 items-center">
+
+
+        <!-- CUBER SNAKE 360 VISUAL -->
+
+        <div class="flex justify-center">
+
+          <div
+            class="w-full max-w-[460px] min-h-[520px] rounded-3xl blue-glow glass flex flex-col items-center justify-center px-8 text-center"
+            style="
+              background:
+                radial-gradient(circle at 50% 30%, rgba(168,85,247,0.18), transparent 35%),
+                radial-gradient(circle at bottom right, rgba(59,130,246,0.16), transparent 38%),
+                linear-gradient(180deg, #0d1220 0%, #05070b 100%);
+            "
+          >
+
+            <div class="text-7xl mb-6">
+              🐍
+            </div>
+
+            <div class="text-4xl md:text-5xl font-black tracking-[0.16em] mb-3">
+              CUBER
+            </div>
+
+            <div class="text-2xl md:text-3xl font-black tracking-[0.20em] text-purple-300 mb-10">
+              SNAKE 360
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 w-full">
+
+              <div class="glass rounded-2xl p-5">
+                <div class="text-3xl mb-2">📺</div>
+                <div class="font-black">TV SCREEN</div>
+                <div class="text-sm text-slate-400 mt-1">Open the game in a browser</div>
+              </div>
+
+              <div class="glass rounded-2xl p-5">
+                <div class="text-3xl mb-2">📱</div>
+                <div class="font-black">PHONE CONTROL</div>
+                <div class="text-sm text-slate-400 mt-1">Use your phone as a joystick</div>
+              </div>
+
+            </div>
+
+            <div class="mt-8 text-sm text-slate-400">
+              Scan the QR code, join the room and play together.
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- CUBER SNAKE 360 TEXT -->
+
+        <div class="text-center lg:text-left">
+
+          <div class="text-purple-400 font-bold tracking-[0.25em] mb-4">
+            PARTY ARCADE
+          </div>
+
+          <h2 class="text-5xl md:text-7xl font-black tracking-[0.10em] mb-6">
+            CUBER SNAKE 360
+          </h2>
+
+          <h3 class="text-3xl md:text-4xl font-black leading-tight mb-6">
+            TURN YOUR TV INTO THE GAME.
+          </h3>
+
+          <p class="text-lg text-slate-300 mb-5 max-w-xl">
+            Open Cuber Snake 360 on your TV or computer and use your phones as wireless controllers.
+          </p>
+
+          <p class="text-lg text-slate-400 mb-10 max-w-xl">
+            Create a room, scan the QR code, choose your snake color and compete for the highest score.
+          </p>
+
+          <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+
+            <a
+              href="/play/"
+              class="inline-block border border-purple-400 rounded-full px-10 py-4 font-black tracking-[0.08em] hover:bg-purple-500 hover:text-white transition"
+            >
+              PLAY NOW
+            </a>
+
+            <a
+              href="/join/"
+              class="inline-block border border-slate-600 rounded-full px-10 py-4 font-bold hover:border-white hover:text-white transition"
+            >
+              JOIN A GAME
+            </a>
+
+          </div>
+
+        </div>
+
 
       </div>
 
@@ -421,17 +627,23 @@
         GAMES
       </h2>
 
-      <div class="grid md:grid-cols-3 gap-8">
+
+      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+
+
+        <!-- CUBER -->
 
         <div class="glass game-card rounded-3xl p-10 text-center">
 
-<div class="mb-6 flex justify-center">
-    <img
-        src="icon.ico"
-        alt="Cuber"
-        class="w-20 h-20 object-contain"
-    >
-</div>
+          <div class="mb-6 flex justify-center">
+
+            <img
+              src="icon.ico"
+              alt="Cuber"
+              class="w-20 h-20 object-contain"
+            >
+
+          </div>
 
           <h3 class="text-4xl font-black tracking-[0.15em] mb-4">
             CUBER
@@ -453,14 +665,18 @@
         </div>
 
 
+        <!-- MAGNET DROP -->
+
         <div class="glass game-card rounded-3xl p-10 text-center">
 
           <div class="mb-6 flex justify-center">
+
             <img
-              src="/icon.png"
+              src="icon.png"
               alt="Magnet Drop"
               class="w-20 h-20 rounded-2xl object-cover"
             >
+
           </div>
 
           <h3 class="text-3xl font-black tracking-[0.10em] mb-4">
@@ -483,36 +699,7 @@
         </div>
 
 
-        <!-- CUBER SNAKE 360 -->
-        <div class="glass game-card rounded-3xl p-10 text-center">
-
-          <div class="mb-6 flex justify-center">
-            <div class="w-20 h-20 rounded-2xl border border-purple-400/50 bg-purple-500/10 flex items-center justify-center text-4xl">
-              ◉
-            </div>
-          </div>
-
-          <h3 class="text-3xl font-black tracking-[0.10em] mb-4">
-            CUBER SNAKE 360
-          </h3>
-
-          <p class="text-slate-300 mb-3">
-            PLAY ON YOUR TV
-          </p>
-
-          <p class="text-slate-400 mb-8">
-            Turn any browser into the game screen and use your phones as wireless controllers.
-          </p>
-
-          <a
-            href="/play/"
-            class="inline-block border border-purple-400 rounded-full px-8 py-3 font-bold hover:bg-purple-500 hover:text-white transition"
-          >
-            PLAY NOW
-          </a>
-
-        </div>
-
+        <!-- CHESS -->
 
         <div class="glass game-card rounded-3xl p-10 text-center">
 
@@ -537,7 +724,34 @@
             VIEW GAME
           </a>
 
+        <!-- CUBER SNAKE 360 -->
+
+        <div class="glass game-card rounded-3xl p-10 text-center">
+
+          <div class="text-6xl mb-6">
+            🐍
+          </div>
+
+          <h3 class="text-3xl font-black tracking-[0.10em] mb-4">
+            CUBER SNAKE 360
+          </h3>
+
+          <p class="text-slate-300 mb-8">
+            Play on your TV and use your phones as wireless controllers.
+          </p>
+
+          <a
+            href="/play/"
+            class="inline-block border border-purple-400 rounded-full px-8 py-3 font-bold hover:bg-purple-500 hover:text-white transition"
+          >
+            PLAY NOW
+          </a>
+
         </div>
+
+
+        </div>
+
 
       </div>
 
@@ -563,11 +777,13 @@
       target="_blank"
       rel="noopener noreferrer"
     >
+
       <img
         class="w-72 mx-auto hover:scale-105 duration-300"
         src="https://drive.google.com/thumbnail?id=1Bs5lkBbKIyyKvlcF13wCbC08-9WBUZ4y&sz=w800"
         alt="Cuber Games on Google Play"
       >
+
     </a>
 
   </section>
@@ -593,6 +809,7 @@
 
         </div>
 
+
         <div class="flex gap-8">
 
           <a
@@ -613,6 +830,7 @@
 
       </div>
 
+
       <div class="text-center text-slate-600 mt-10">
         © 2026 Cuber Games
       </div>
@@ -621,9 +839,35 @@
 
   </footer>
 
+
 </main>
+
+
+<script>
+  // Make sure Magnet Drop stays muted so browsers allow autoplay.
+  const magnetDropVideo = document.getElementById("magnetDropVideo");
+
+  if (magnetDropVideo) {
+    magnetDropVideo.muted = true;
+
+    const playVideo = () => {
+      const playPromise = magnetDropVideo.play();
+
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {
+          // Browser may wait for the first user interaction.
+        });
+      }
+    };
+
+    playVideo();
+
+    document.addEventListener("click", playVideo, { once: true });
+    document.addEventListener("touchstart", playVideo, { once: true });
+  }
+</script>
+
 
 </body>
 </html>
-
 
