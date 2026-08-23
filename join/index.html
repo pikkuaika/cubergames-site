@@ -1,0 +1,2257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#05070b">
+
+<title>CUBER Controller</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    background: #05070b;
+    color: #fff;
+    font-family: Arial, Helvetica, sans-serif;
+    overflow: hidden;
+    touch-action: none;
+}
+
+body {
+    background:
+        radial-gradient(circle at 50% 20%, #172238 0%, #090d15 42%, #030406 100%);
+}
+
+.screen {
+    display: none;
+    position: absolute;
+    inset: 0;
+    padding: 24px;
+}
+
+.screen.active {
+    display: flex;
+}
+
+.center-screen {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.logo {
+    font-size: 38px;
+    font-weight: 900;
+    letter-spacing: .14em;
+}
+
+.subtitle {
+    margin-top: 5px;
+    margin-bottom: 34px;
+    opacity: .45;
+    font-size: 12px;
+    letter-spacing: .28em;
+}
+
+.card {
+    width: min(100%, 420px);
+    padding: 24px;
+    border-radius: 24px;
+    background: rgba(255,255,255,.06);
+    border: 1px solid rgba(255,255,255,.1);
+    box-shadow: 0 20px 60px rgba(0,0,0,.3);
+}
+
+.label {
+    display: block;
+    margin-bottom: 8px;
+    opacity: .5;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: .12em;
+}
+
+input {
+    width: 100%;
+    height: 58px;
+    padding: 0 16px;
+    border: 1px solid rgba(255,255,255,.14);
+    border-radius: 15px;
+    outline: none;
+    background: rgba(0,0,0,.3);
+    color: #fff;
+    font-size: 19px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+input:focus {
+    border-color: rgba(255,255,255,.5);
+}
+
+button {
+    border: 0;
+    font-family: inherit;
+    cursor: pointer;
+}
+
+.primary {
+    width: 100%;
+    min-height: 58px;
+    margin-top: 16px;
+    border-radius: 15px;
+    background: #fff;
+    color: #05070b;
+    font-size: 16px;
+    font-weight: 900;
+}
+
+.primary:disabled {
+    opacity: .22;
+}
+
+#error {
+    min-height: 22px;
+    margin-top: 13px;
+    color: #ff6b79;
+    text-align: center;
+    font-size: 13px;
+}
+
+/* LOBBY */
+
+#lobbyScreen {
+    flex-direction: column;
+    overflow-y: auto;
+    touch-action: pan-y;
+}
+
+.topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.room-small {
+    opacity: .5;
+    font-size: 12px;
+    letter-spacing: .1em;
+}
+
+#roomValue {
+    font-size: 23px;
+    font-weight: 900;
+    letter-spacing: .12em;
+}
+
+.host-label {
+    padding: 7px 11px;
+    border-radius: 999px;
+    background: rgba(255,255,255,.12);
+    font-size: 11px;
+    font-weight: 900;
+}
+
+.section-title {
+    margin-top: 28px;
+    margin-bottom: 12px;
+    font-size: 14px;
+    font-weight: 900;
+    letter-spacing: .1em;
+}
+
+#players {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.player {
+    display: flex;
+    align-items: center;
+    min-height: 55px;
+    padding: 10px 13px;
+    border-radius: 14px;
+    background: rgba(255,255,255,.055);
+    border: 1px solid rgba(255,255,255,.07);
+}
+
+.player-dot {
+    width: 28px;
+    height: 28px;
+    margin-right: 11px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,.3);
+}
+
+.player-name {
+    flex: 1;
+    font-weight: 800;
+}
+
+.mini-host {
+    opacity: .55;
+    font-size: 10px;
+    font-weight: 900;
+}
+
+.host-transfer {
+    margin-left: 8px;
+    padding: 7px 9px;
+    border-radius: 8px;
+    background: rgba(255,255,255,.1);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+/* COLORS */
+
+.colors {
+    display: grid;
+    grid-template-columns: repeat(4,1fr);
+    gap: 12px;
+}
+
+.color-button {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    border: 4px solid transparent;
+    transition: transform .12s, opacity .12s, border-color .12s;
+}
+
+.color-button.selected {
+    border-color: #fff;
+    transform: scale(.88);
+}
+
+.color-button.taken:not(.selected) {
+    opacity: .14;
+}
+
+.color-button.taken:not(.selected)::after {
+    content: "×";
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 35px;
+    font-weight: 300;
+}
+
+.red { background: #ff3d3d; }
+.blue { background: #3787ff; }
+.green { background: #36d66b; }
+.yellow { background: #ffd93d; }
+
+/* HOST */
+
+#hostControls {
+    display: none;
+}
+
+.mode-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.mode {
+    min-height: 55px;
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 14px;
+    background: rgba(255,255,255,.05);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 900;
+}
+
+.mode.selected {
+    background: #fff;
+    color: #05070b;
+}
+
+#startButton {
+    margin-top: 11px;
+}
+
+.waiting-host {
+    margin-top: 25px;
+    padding: 18px;
+    border-radius: 15px;
+    background: rgba(255,255,255,.04);
+    color: rgba(255,255,255,.45);
+    text-align: center;
+    font-size: 13px;
+}
+
+/* COUNTDOWN */
+
+#countdownScreen {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#countdownNumber {
+    font-size: 42vw;
+    max-font-size: 260px;
+    line-height: .8;
+    font-weight: 900;
+}
+
+.countdown-text {
+    margin-top: 30px;
+    opacity: .4;
+    font-weight: 800;
+    letter-spacing: .2em;
+}
+
+/* CONTROLLER */
+
+#controllerScreen {
+    padding: 0;
+    flex-direction: column;
+}
+
+.controller-header {
+    height: 95px;
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid rgba(255,255,255,.07);
+}
+
+.controller-dot {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+    border-radius: 50%;
+}
+
+.controller-name {
+    flex: 1;
+    font-weight: 900;
+}
+
+#score {
+    font-size: 28px;
+    font-weight: 900;
+}
+
+#aliveState {
+    margin-left: 10px;
+    opacity: .45;
+    font-size: 11px;
+}
+
+.joystick-area {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#joystick {
+    position: relative;
+    width: min(72vw, 340px);
+    height: min(72vw, 340px);
+    max-height: 60vh;
+    max-width: 60vh;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle, rgba(255,255,255,.07), rgba(255,255,255,.025));
+    border: 2px solid rgba(255,255,255,.09);
+    box-shadow:
+        inset 0 0 50px rgba(255,255,255,.025),
+        0 20px 70px rgba(0,0,0,.3);
+}
+
+#joystick::before,
+#joystick::after {
+    content: "";
+    position: absolute;
+    background: rgba(255,255,255,.05);
+}
+
+#joystick::before {
+    width: 1px;
+    height: 80%;
+    left: 50%;
+    top: 10%;
+}
+
+#joystick::after {
+    height: 1px;
+    width: 80%;
+    top: 50%;
+    left: 10%;
+}
+
+#stick {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 36%;
+    height: 36%;
+    transform: translate(-50%,-50%);
+    border-radius: 50%;
+    background: #fff;
+    box-shadow:
+        0 10px 30px rgba(0,0,0,.4),
+        0 0 30px rgba(255,255,255,.15);
+    z-index: 2;
+}
+
+.controller-info {
+    height: 55px;
+    text-align: center;
+    opacity: .25;
+    font-size: 11px;
+    letter-spacing: .1em;
+}
+
+/* GAME OVER */
+
+#gameOverScreen {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.over-small {
+    opacity: .4;
+    letter-spacing: .2em;
+}
+
+#resultTitle {
+    margin-top: 12px;
+    font-size: 48px;
+    font-weight: 900;
+}
+
+#resultScore {
+    margin-top: 12px;
+    font-size: 20px;
+    opacity: .6;
+}
+
+#newGameButton {
+    display: none;
+    width: min(360px,90vw);
+    margin-top: 35px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- JOIN -->
+<section id="joinScreen" class="screen center-screen active">
+
+    <div class="logo">CUBER</div>
+    <div class="subtitle">SNAKE 360</div>
+
+    <div class="card">
+
+        <label class="label">ROOM CODE</label>
+        <input
+            id="roomInput"
+            maxlength="8"
+            autocomplete="off"
+            spellcheck="false"
+            placeholder="ABCD"
+        >
+
+        <label class="label" style="margin-top:18px">YOUR NAME</label>
+        <input
+            id="nameInput"
+            maxlength="16"
+            autocomplete="off"
+            spellcheck="false"
+            placeholder="PLAYER"
+        >
+
+        <button id="joinButton" class="primary">
+            JOIN GAME
+        </button>
+
+        <div id="error"></div>
+
+    </div>
+
+</section>
+
+
+<!-- LOBBY -->
+<section id="lobbyScreen" class="screen">
+
+    <div class="topbar">
+
+        <div>
+            <div class="room-small">ROOM</div>
+            <div id="roomValue">----</div>
+        </div>
+
+        <div id="hostBadge" class="host-label" style="display:none">
+            HOST
+        </div>
+
+    </div>
+
+
+    <div class="section-title">
+        PLAYERS
+    </div>
+
+    <div id="players"></div>
+
+
+    <div class="section-title">
+        CHOOSE YOUR COLOR
+    </div>
+
+    <div id="colors" class="colors">
+
+        <button class="color-button red" data-color="red"></button>
+        <button class="color-button blue" data-color="blue"></button>
+        <button class="color-button green" data-color="green"></button>
+        <button class="color-button yellow" data-color="yellow"></button>
+
+    </div>
+
+
+    <div id="hostControls">
+
+        <div class="section-title">
+            GAME MODE
+        </div>
+
+        <div class="mode-grid">
+
+            <button id="soloButton" class="mode">
+                SOLO
+            </button>
+
+            <button id="multiButton" class="mode">
+                MULTIPLAYER
+            </button>
+
+        </div>
+
+        <button id="startButton" class="primary">
+            START GAME
+        </button>
+
+    </div>
+
+
+    <div id="waitingHost" class="waiting-host">
+        Waiting for host to start the game
+    </div>
+
+    <div id="lobbyError" class="error"></div>
+
+</section>
+
+
+<!-- COUNTDOWN -->
+<section id="countdownScreen" class="screen">
+
+    <div id="countdownNumber">3</div>
+
+    <div class="countdown-text">
+        GET READY
+    </div>
+
+</section>
+
+
+<!-- CONTROLLER -->
+<section id="controllerScreen" class="screen">
+
+    <div class="controller-header">
+
+        <div id="controllerDot" class="controller-dot"></div>
+
+        <div id="controllerName" class="controller-name">
+            PLAYER
+        </div>
+
+        <div id="score">
+            0
+        </div>
+
+        <div id="aliveState">
+            ALIVE
+        </div>
+
+    </div>
+
+
+    <div class="joystick-area">
+
+        <div id="joystick">
+            <div id="stick"></div>
+        </div>
+
+    </div>
+
+
+    <div class="controller-info">
+        DRAG TO STEER
+    </div>
+
+</section>
+
+
+<!-- GAME OVER -->
+<section id="gameOverScreen" class="screen">
+
+    <div class="over-small">
+        GAME OVER
+    </div>
+
+    <div id="resultTitle">
+        FINISHED
+    </div>
+
+    <div id="resultScore">
+        0 POINTS
+    </div>
+
+    <button id="newGameButton" class="primary">
+        NEW GAME
+    </button>
+
+</section>
+
+
+<script>
+"use strict";
+
+/* ============================================================
+   CONFIG
+============================================================ */
+
+const API_WS =
+    "wss://game-api.cubergames.com";
+
+
+const COLORS = {
+
+    red:
+        "#ff3d3d",
+
+    blue:
+        "#3787ff",
+
+    green:
+        "#36d66b",
+
+    yellow:
+        "#ffd93d"
+};
+
+
+/* ============================================================
+   STATE
+============================================================ */
+
+let socket =
+    null;
+
+let roomCode =
+    "";
+
+let playerName =
+    "";
+
+let playerId =
+    null;
+
+let roomState =
+    null;
+
+let reconnecting =
+    false;
+
+let joystickActive =
+    false;
+
+let joystickPointer =
+    null;
+
+let lastSteerTime =
+    0;
+
+
+/* ============================================================
+   ELEMENTS
+============================================================ */
+
+const screens = {
+
+    join:
+        document.getElementById("joinScreen"),
+
+    lobby:
+        document.getElementById("lobbyScreen"),
+
+    countdown:
+        document.getElementById("countdownScreen"),
+
+    controller:
+        document.getElementById("controllerScreen"),
+
+    over:
+        document.getElementById("gameOverScreen")
+};
+
+
+const roomInput =
+    document.getElementById("roomInput");
+
+const nameInput =
+    document.getElementById("nameInput");
+
+const joinButton =
+    document.getElementById("joinButton");
+
+const errorEl =
+    document.getElementById("error");
+
+const roomValue =
+    document.getElementById("roomValue");
+
+const playersEl =
+    document.getElementById("players");
+
+const hostBadge =
+    document.getElementById("hostBadge");
+
+const hostControls =
+    document.getElementById("hostControls");
+
+const waitingHost =
+    document.getElementById("waitingHost");
+
+const soloButton =
+    document.getElementById("soloButton");
+
+const multiButton =
+    document.getElementById("multiButton");
+
+const startButton =
+    document.getElementById("startButton");
+
+const colorButtons =
+    Array.from(
+        document.querySelectorAll(
+            ".color-button"
+        )
+    );
+
+const countdownNumber =
+    document.getElementById("countdownNumber");
+
+const controllerDot =
+    document.getElementById("controllerDot");
+
+const controllerName =
+    document.getElementById("controllerName");
+
+const scoreEl =
+    document.getElementById("score");
+
+const aliveState =
+    document.getElementById("aliveState");
+
+const joystick =
+    document.getElementById("joystick");
+
+const stick =
+    document.getElementById("stick");
+
+const resultTitle =
+    document.getElementById("resultTitle");
+
+const resultScore =
+    document.getElementById("resultScore");
+
+const newGameButton =
+    document.getElementById("newGameButton");
+
+
+/* ============================================================
+   ROOM FROM QR
+============================================================ */
+
+const query =
+    new URLSearchParams(
+        location.search
+    );
+
+
+const roomFromURL =
+    (
+        query.get("room")
+        ||
+        ""
+    )
+        .toUpperCase()
+        .replace(
+            /[^A-Z0-9]/g,
+            ""
+        )
+        .slice(
+            0,
+            8
+        );
+
+
+if (
+    roomFromURL
+) {
+
+    roomInput.value =
+        roomFromURL;
+}
+
+
+/* ============================================================
+   JOIN
+============================================================ */
+
+joinButton.addEventListener(
+    "click",
+    joinGame
+);
+
+
+nameInput.addEventListener(
+    "keydown",
+    event => {
+
+        if (
+            event.key === "Enter"
+        ) {
+
+            joinGame();
+        }
+    }
+);
+
+
+function joinGame() {
+
+    errorEl.textContent =
+        "";
+
+
+    roomCode =
+        roomInput.value
+            .toUpperCase()
+            .replace(
+                /[^A-Z0-9]/g,
+                ""
+            )
+            .slice(
+                0,
+                8
+            );
+
+
+    playerName =
+        nameInput.value
+            .trim()
+            .toUpperCase()
+            .slice(
+                0,
+                16
+            );
+
+
+    if (
+        !roomCode
+    ) {
+
+        errorEl.textContent =
+            "Enter room code";
+
+        return;
+    }
+
+
+    if (
+        !playerName
+    ) {
+
+        errorEl.textContent =
+            "Enter your name";
+
+        return;
+    }
+
+
+    joinButton.disabled =
+        true;
+
+    joinButton.textContent =
+        "CONNECTING...";
+
+
+    connectPlayer();
+}
+
+
+/* ============================================================
+   CONNECT
+============================================================ */
+
+function connectPlayer() {
+
+    const url =
+        API_WS
+        +
+        "/room/"
+        +
+        encodeURIComponent(
+            roomCode
+        )
+        +
+        "?role=player&name="
+        +
+        encodeURIComponent(
+            playerName
+        );
+
+
+    socket =
+        new WebSocket(
+            url
+        );
+
+
+    socket.addEventListener(
+        "open",
+        () => {
+
+            reconnecting =
+                false;
+        }
+    );
+
+
+    socket.addEventListener(
+        "message",
+        event => {
+
+            handleMessage(
+                event.data
+            );
+        }
+    );
+
+
+    socket.addEventListener(
+        "close",
+        event => {
+
+            joinButton.disabled =
+                false;
+
+            joinButton.textContent =
+                "JOIN GAME";
+
+
+            if (
+                playerId === null
+            ) {
+
+                if (
+                    event.reason
+                ) {
+
+                    errorEl.textContent =
+                        event.reason;
+                }
+                else {
+
+                    errorEl.textContent =
+                        "Could not join room";
+                }
+            }
+        }
+    );
+
+
+    socket.addEventListener(
+        "error",
+        () => {
+
+            if (
+                playerId === null
+            ) {
+
+                errorEl.textContent =
+                    "Connection failed";
+            }
+        }
+    );
+}
+
+
+/* ============================================================
+   SERVER MESSAGES
+============================================================ */
+
+function handleMessage(
+    raw
+) {
+
+    let message;
+
+
+    try {
+
+        message =
+            JSON.parse(
+                raw
+            );
+    }
+    catch {
+
+        return;
+    }
+
+
+    if (
+        message.type === "joined"
+    ) {
+
+        playerId =
+            Number(
+                message.playerId
+            );
+
+
+        roomValue.textContent =
+            roomCode;
+
+
+        showScreen(
+            "lobby"
+        );
+
+
+        return;
+    }
+
+
+    if (
+        message.type === "room_state"
+    ) {
+
+        roomState =
+            message;
+
+
+        renderLobby();
+
+
+        if (
+            message.status === "lobby"
+        ) {
+
+            showScreen(
+                "lobby"
+            );
+        }
+        else if (
+            message.status === "running"
+        ) {
+
+            showController();
+        }
+
+
+        return;
+    }
+
+
+    if (
+        message.type === "error"
+    ) {
+
+        handleServerError(
+            message
+        );
+
+        return;
+    }
+
+
+    if (
+        message.type === "countdown_start"
+    ) {
+
+        beginCountdown(
+            message.duration || 2400
+        );
+
+        return;
+    }
+
+
+    if (
+        message.type === "tv_state"
+    ) {
+
+        updateGameState(
+            message.state
+        );
+
+        return;
+    }
+
+
+    if (
+        message.type === "game_over"
+    ) {
+
+        showResults(
+            message
+        );
+
+        return;
+    }
+
+
+    if (
+        message.type === "return_to_lobby"
+    ) {
+
+        scoreEl.textContent =
+            "0";
+
+        aliveState.textContent =
+            "ALIVE";
+
+        showScreen(
+            "lobby"
+        );
+
+        return;
+    }
+}
+
+
+/* ============================================================
+   SERVER ERROR
+============================================================ */
+
+function handleServerError(
+    message
+) {
+
+    const code =
+        message.code || "";
+
+
+    if (
+        code === "COLOR_TAKEN"
+    ) {
+
+        alert(
+            "That color is already taken."
+        );
+
+        return;
+    }
+
+
+    if (
+        code === "PLAYER_MISSING_COLOR"
+    ) {
+
+        alert(
+            message.playerName
+            +
+            " must choose a color."
+        );
+
+        return;
+    }
+
+
+    if (
+        code === "NO_MODE"
+    ) {
+
+        alert(
+            "Choose Solo or Multiplayer first."
+        );
+
+        return;
+    }
+
+
+    if (
+        code === "NOT_ENOUGH_PLAYERS"
+    ) {
+
+        alert(
+            "Multiplayer requires at least two players."
+        );
+
+        return;
+    }
+
+
+    if (
+        code === "NOT_HOST"
+    ) {
+
+        alert(
+            "Only the host can do that."
+        );
+
+        return;
+    }
+
+
+    alert(
+        message.message
+        ||
+        "Something went wrong."
+    );
+}
+
+
+/* ============================================================
+   RENDER LOBBY
+============================================================ */
+
+function renderLobby() {
+
+    if (
+        !roomState
+        ||
+        playerId === null
+    ) {
+
+        return;
+    }
+
+
+    const players =
+        Array.isArray(
+            roomState.players
+        )
+            ? roomState.players
+            : [];
+
+
+    const me =
+        players.find(
+            player =>
+                Number(player.id)
+                ===
+                playerId
+        );
+
+
+    const isHost =
+        Number(
+            roomState.hostId
+        )
+        ===
+        playerId;
+
+
+    hostBadge.style.display =
+        isHost
+            ? "block"
+            : "none";
+
+
+    hostControls.style.display =
+        isHost
+            ? "block"
+            : "none";
+
+
+    waitingHost.style.display =
+        isHost
+            ? "none"
+            : "block";
+
+
+    playersEl.innerHTML =
+        "";
+
+
+    for (
+        const player
+        of players
+    ) {
+
+        const row =
+            document.createElement(
+                "div"
+            );
+
+        row.className =
+            "player";
+
+
+        const dot =
+            document.createElement(
+                "div"
+            );
+
+        dot.className =
+            "player-dot";
+
+
+        dot.style.background =
+            player.color
+            &&
+            COLORS[player.color]
+                ? COLORS[player.color]
+                : "#333";
+
+
+        const name =
+            document.createElement(
+                "div"
+            );
+
+        name.className =
+            "player-name";
+
+        name.textContent =
+            player.name
+            +
+            (
+                Number(player.id) === playerId
+                    ? " (YOU)"
+                    : ""
+            );
+
+
+        row.appendChild(
+            dot
+        );
+
+        row.appendChild(
+            name
+        );
+
+
+        if (
+            player.isHost
+        ) {
+
+            const badge =
+                document.createElement(
+                    "div"
+                );
+
+            badge.className =
+                "mini-host";
+
+            badge.textContent =
+                "HOST";
+
+
+            row.appendChild(
+                badge
+            );
+        }
+
+
+        /*
+         * Current host can give host rights
+         * to another player.
+         */
+
+        if (
+            isHost
+            &&
+            Number(player.id) !== playerId
+        ) {
+
+            const transfer =
+                document.createElement(
+                    "button"
+                );
+
+            transfer.className =
+                "host-transfer";
+
+            transfer.textContent =
+                "MAKE HOST";
+
+
+            transfer.addEventListener(
+                "click",
+                () => {
+
+                    send(
+                        {
+                            type:
+                                "transfer_host",
+
+                            playerId:
+                                Number(
+                                    player.id
+                                )
+                        }
+                    );
+                }
+            );
+
+
+            row.appendChild(
+                transfer
+            );
+        }
+
+
+        playersEl.appendChild(
+            row
+        );
+    }
+
+
+    /*
+     * Color availability.
+     */
+
+    const usedColors =
+        Array.isArray(
+            roomState.usedColors
+        )
+            ? roomState.usedColors
+            : [];
+
+
+    for (
+        const button
+        of colorButtons
+    ) {
+
+        const color =
+            button.dataset.color;
+
+
+        const mine =
+            me
+            &&
+            me.color === color;
+
+
+        const taken =
+            usedColors.includes(
+                color
+            );
+
+
+        button.classList.toggle(
+            "selected",
+            mine
+        );
+
+
+        button.classList.toggle(
+            "taken",
+            taken
+        );
+
+
+        button.disabled =
+            taken
+            &&
+            !mine;
+    }
+
+
+    soloButton.classList.toggle(
+        "selected",
+        roomState.mode === "SOLO"
+    );
+
+
+    multiButton.classList.toggle(
+        "selected",
+        roomState.mode === "MULTI"
+    );
+
+
+    /*
+     * Host needs:
+     * - game mode
+     * - own/player colors
+     * - enough players for multiplayer
+     */
+
+    if (
+        isHost
+    ) {
+
+        const everyoneHasColor =
+            players.length > 0
+            &&
+            players.every(
+                player =>
+                    !!player.color
+            );
+
+
+        const modeOK =
+            roomState.mode === "SOLO"
+            ||
+            roomState.mode === "MULTI";
+
+
+        const playersOK =
+            roomState.mode !== "MULTI"
+            ||
+            players.length >= 2;
+
+
+        startButton.disabled =
+            !everyoneHasColor
+            ||
+            !modeOK
+            ||
+            !playersOK;
+    }
+}
+
+
+/* ============================================================
+   COLOR
+============================================================ */
+
+for (
+    const button
+    of colorButtons
+) {
+
+    button.addEventListener(
+        "click",
+        () => {
+
+            if (
+                button.disabled
+            ) {
+
+                return;
+            }
+
+
+            send(
+                {
+                    type:
+                        "select_color",
+
+                    color:
+                        button.dataset.color
+                }
+            );
+        }
+    );
+}
+
+
+/* ============================================================
+   GAME MODE
+============================================================ */
+
+soloButton.addEventListener(
+    "click",
+    () => {
+
+        send(
+            {
+                type:
+                    "select_mode",
+
+                mode:
+                    "SOLO"
+            }
+        );
+    }
+);
+
+
+multiButton.addEventListener(
+    "click",
+    () => {
+
+        send(
+            {
+                type:
+                    "select_mode",
+
+                mode:
+                    "MULTI"
+            }
+        );
+    }
+);
+
+
+/* ============================================================
+   START
+============================================================ */
+
+startButton.addEventListener(
+    "click",
+    () => {
+
+        send(
+            {
+                type:
+                    "start_game"
+            }
+        );
+    }
+);
+
+
+/* ============================================================
+   COUNTDOWN
+============================================================ */
+
+function beginCountdown(
+    duration
+) {
+
+    showScreen(
+        "countdown"
+    );
+
+
+    const start =
+        performance.now();
+
+
+    function tick(
+        now
+    ) {
+
+        const remaining =
+            duration
+            -
+            (
+                now - start
+            );
+
+
+        if (
+            remaining <= 0
+        ) {
+
+            countdownNumber.textContent =
+                "GO!";
+
+
+            setTimeout(
+                showController,
+                250
+            );
+
+
+            return;
+        }
+
+
+        const ratio =
+            remaining
+            /
+            duration;
+
+
+        if (
+            ratio > .66
+        ) {
+
+            countdownNumber.textContent =
+                "3";
+        }
+        else if (
+            ratio > .33
+        ) {
+
+            countdownNumber.textContent =
+                "2";
+        }
+        else {
+
+            countdownNumber.textContent =
+                "1";
+        }
+
+
+        requestAnimationFrame(
+            tick
+        );
+    }
+
+
+    requestAnimationFrame(
+        tick
+    );
+}
+
+
+/* ============================================================
+   CONTROLLER
+============================================================ */
+
+function showController() {
+
+    showScreen(
+        "controller"
+    );
+
+
+    controllerName.textContent =
+        playerName;
+
+
+    const me =
+        roomState
+        &&
+        Array.isArray(
+            roomState.players
+        )
+            ? roomState.players.find(
+                player =>
+                    Number(player.id)
+                    ===
+                    playerId
+            )
+            : null;
+
+
+    const color =
+        me
+        &&
+        COLORS[me.color]
+            ? COLORS[me.color]
+            : "#fff";
+
+
+    controllerDot.style.background =
+        color;
+
+
+    stick.style.background =
+        color;
+
+
+    stick.style.boxShadow =
+        "0 10px 30px rgba(0,0,0,.4), 0 0 35px "
+        +
+        color;
+}
+
+
+/* ============================================================
+   JOYSTICK
+============================================================ */
+
+joystick.addEventListener(
+    "pointerdown",
+    event => {
+
+        event.preventDefault();
+
+
+        joystickActive =
+            true;
+
+        joystickPointer =
+            event.pointerId;
+
+
+        joystick.setPointerCapture(
+            event.pointerId
+        );
+
+
+        updateJoystick(
+            event
+        );
+    }
+);
+
+
+joystick.addEventListener(
+    "pointermove",
+    event => {
+
+        if (
+            !joystickActive
+            ||
+            event.pointerId !== joystickPointer
+        ) {
+
+            return;
+        }
+
+
+        event.preventDefault();
+
+
+        updateJoystick(
+            event
+        );
+    }
+);
+
+
+function stopJoystick(
+    event
+) {
+
+    if (
+        event.pointerId !== joystickPointer
+    ) {
+
+        return;
+    }
+
+
+    joystickActive =
+        false;
+
+    joystickPointer =
+        null;
+
+
+    stick.style.transform =
+        "translate(-50%,-50%)";
+
+
+    /*
+     * We intentionally don't send 0,0.
+     * The worm keeps travelling in its last direction.
+     */
+}
+
+
+joystick.addEventListener(
+    "pointerup",
+    stopJoystick
+);
+
+
+joystick.addEventListener(
+    "pointercancel",
+    stopJoystick
+);
+
+
+function updateJoystick(
+    event
+) {
+
+    const rect =
+        joystick.getBoundingClientRect();
+
+
+    const centerX =
+        rect.left
+        +
+        rect.width / 2;
+
+
+    const centerY =
+        rect.top
+        +
+        rect.height / 2;
+
+
+    let dx =
+        event.clientX
+        -
+        centerX;
+
+
+    let dy =
+        event.clientY
+        -
+        centerY;
+
+
+    const maxRadius =
+        rect.width
+        *
+        .34;
+
+
+    const distance =
+        Math.hypot(
+            dx,
+            dy
+        );
+
+
+    if (
+        distance > maxRadius
+    ) {
+
+        dx =
+            dx
+            /
+            distance
+            *
+            maxRadius;
+
+
+        dy =
+            dy
+            /
+            distance
+            *
+            maxRadius;
+    }
+
+
+    stick.style.transform =
+        "translate(calc(-50% + "
+        +
+        dx
+        +
+        "px), calc(-50% + "
+        +
+        dy
+        +
+        "px))";
+
+
+    const x =
+        clamp(
+            dx / maxRadius,
+            -1,
+            1
+        );
+
+
+    const y =
+        clamp(
+            dy / maxRadius,
+            -1,
+            1
+        );
+
+
+    /*
+     * Limit network traffic to roughly 30 updates/sec.
+     */
+
+    const now =
+        performance.now();
+
+
+    if (
+        now - lastSteerTime
+        <
+        33
+    ) {
+
+        return;
+    }
+
+
+    lastSteerTime =
+        now;
+
+
+    send(
+        {
+            type:
+                "steer",
+
+            x:
+                x,
+
+            y:
+                y
+        }
+    );
+}
+
+
+/* ============================================================
+   GAME STATE FROM TV
+============================================================ */
+
+function updateGameState(
+    state
+) {
+
+    if (
+        !state
+        ||
+        !Array.isArray(
+            state.players
+        )
+    ) {
+
+        return;
+    }
+
+
+    const me =
+        state.players.find(
+            player =>
+                Number(player.id)
+                ===
+                playerId
+        );
+
+
+    if (
+        !me
+    ) {
+
+        return;
+    }
+
+
+    scoreEl.textContent =
+        String(
+            me.score || 0
+        );
+
+
+    aliveState.textContent =
+        me.alive
+            ? "ALIVE"
+            : "OUT";
+
+
+    aliveState.style.color =
+        me.alive
+            ? ""
+            : "#ff5d6c";
+}
+
+
+/* ============================================================
+   GAME OVER
+============================================================ */
+
+function showResults(
+    message
+) {
+
+    showScreen(
+        "over"
+    );
+
+
+    const results =
+        Array.isArray(
+            message.results
+        )
+            ? message.results
+            : [];
+
+
+    const me =
+        results.find(
+            player =>
+                Number(player.id)
+                ===
+                playerId
+        );
+
+
+    const winner =
+        message.winner;
+
+
+    if (
+        winner
+        &&
+        Number(winner.id) === playerId
+    ) {
+
+        resultTitle.textContent =
+            "YOU WIN!";
+    }
+    else {
+
+        resultTitle.textContent =
+            winner
+                ? winner.name + " WINS"
+                : "GAME OVER";
+    }
+
+
+    const points =
+        me
+            ? Number(me.score || 0)
+            : 0;
+
+
+    resultScore.textContent =
+        points
+        +
+        (
+            points === 1
+                ? " POINT"
+                : " POINTS"
+        );
+
+
+    const isHost =
+        roomState
+        &&
+        Number(roomState.hostId)
+        ===
+        playerId;
+
+
+    newGameButton.style.display =
+        isHost
+            ? "block"
+            : "none";
+}
+
+
+/* ============================================================
+   NEW GAME
+============================================================ */
+
+newGameButton.addEventListener(
+    "click",
+    () => {
+
+        send(
+            {
+                type:
+                    "new_game"
+            }
+        );
+    }
+);
+
+
+/* ============================================================
+   SEND
+============================================================ */
+
+function send(
+    message
+) {
+
+    if (
+        !socket
+        ||
+        socket.readyState !== WebSocket.OPEN
+    ) {
+
+        return;
+    }
+
+
+    socket.send(
+        JSON.stringify(
+            message
+        )
+    );
+}
+
+
+/* ============================================================
+   SCREENS
+============================================================ */
+
+function showScreen(
+    name
+) {
+
+    for (
+        const screen
+        of Object.values(
+            screens
+        )
+    ) {
+
+        screen.classList.remove(
+            "active"
+        );
+    }
+
+
+    screens[name].classList.add(
+        "active"
+    );
+}
+
+
+/* ============================================================
+   HELPERS
+============================================================ */
+
+function clamp(
+    value,
+    min,
+    max
+) {
+
+    return Math.max(
+        min,
+        Math.min(
+            max,
+            value
+        )
+    );
+}
+
+
+/* ============================================================
+   PREVENT ACCIDENTAL PAGE MOVEMENT DURING GAME
+============================================================ */
+
+document.addEventListener(
+    "contextmenu",
+    event => {
+
+        if (
+            screens.controller.classList.contains(
+                "active"
+            )
+        ) {
+
+            event.preventDefault();
+        }
+    }
+);
+
+</script>
+
+</body>
+</html>

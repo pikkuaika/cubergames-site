@@ -1,0 +1,3948 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>CUBER Snake 360</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #05070b;
+    color: white;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+body {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#app {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background:
+        radial-gradient(circle at 50% 35%, #162033 0%, #090d15 40%, #030406 100%);
+}
+
+/* =========================================================
+   BACKGROUND
+========================================================= */
+
+.grid {
+    position: absolute;
+    inset: 0;
+    opacity: 0.16;
+    background-image:
+        linear-gradient(rgba(255,255,255,.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.08) 1px, transparent 1px);
+    background-size: 50px 50px;
+    pointer-events: none;
+}
+
+/* =========================================================
+   LOBBY
+========================================================= */
+
+#lobby {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 4vh 4vw;
+}
+
+.logo {
+    margin-top: 1vh;
+    font-size: clamp(34px, 5vw, 72px);
+    font-weight: 900;
+    letter-spacing: 0.14em;
+    text-shadow: 0 0 30px rgba(255,255,255,.15);
+}
+
+.subtitle {
+    margin-top: 8px;
+    opacity: .55;
+    font-size: clamp(14px, 1.5vw, 24px);
+    letter-spacing: .32em;
+}
+
+.lobby-content {
+    flex: 1;
+    width: min(1400px, 94vw);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5vw;
+    align-items: center;
+}
+
+.join-side {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.join-title {
+    font-size: clamp(18px, 2vw, 32px);
+    font-weight: 800;
+    letter-spacing: .12em;
+    margin-bottom: 18px;
+}
+
+#qr {
+    width: min(30vw, 340px);
+    height: min(30vw, 340px);
+    min-width: 220px;
+    min-height: 220px;
+    padding: 14px;
+    background: white;
+    border-radius: 24px;
+    box-shadow:
+        0 0 50px rgba(255,255,255,.12),
+        0 20px 60px rgba(0,0,0,.45);
+}
+
+#qr img,
+#qr canvas {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+.room-label {
+    margin-top: 22px;
+    opacity: .55;
+    font-size: clamp(13px, 1.3vw, 20px);
+    letter-spacing: .22em;
+}
+
+#roomCode {
+    margin-top: 5px;
+    font-size: clamp(44px, 6vw, 86px);
+    font-weight: 900;
+    letter-spacing: .18em;
+}
+
+.join-url {
+    margin-top: 8px;
+    opacity: .5;
+    font-size: clamp(12px, 1.2vw, 18px);
+}
+
+.players-side {
+    width: 100%;
+    max-width: 620px;
+}
+
+.players-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    margin-bottom: 16px;
+}
+
+.players-title {
+    font-size: clamp(22px, 2.6vw, 38px);
+    font-weight: 900;
+}
+
+#playerCount {
+    opacity: .5;
+    font-size: clamp(14px, 1.4vw, 20px);
+}
+
+#players {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.player-card {
+    min-height: 74px;
+    border: 1px solid rgba(255,255,255,.1);
+    background: rgba(255,255,255,.055);
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    padding: 14px 18px;
+    backdrop-filter: blur(8px);
+}
+
+.player-color {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    margin-right: 16px;
+    border: 3px solid rgba(255,255,255,.35);
+    flex: 0 0 auto;
+}
+
+.player-color.empty {
+    background:
+        repeating-linear-gradient(
+            45deg,
+            #333,
+            #333 5px,
+            #1b1b1b 5px,
+            #1b1b1b 10px
+        );
+}
+
+.player-name {
+    font-size: clamp(17px, 1.7vw, 26px);
+    font-weight: 800;
+    flex: 1;
+}
+
+.host-badge {
+    border-radius: 999px;
+    padding: 7px 12px;
+    font-size: clamp(10px, 1vw, 14px);
+    font-weight: 900;
+    letter-spacing: .08em;
+    background: rgba(255,255,255,.12);
+}
+
+.waiting {
+    border: 1px dashed rgba(255,255,255,.12);
+    border-radius: 18px;
+    min-height: 74px;
+    display: flex;
+    align-items: center;
+    padding: 18px;
+    color: rgba(255,255,255,.3);
+}
+
+.mode-display {
+    margin-top: 22px;
+    min-height: 28px;
+    font-size: clamp(14px, 1.4vw, 20px);
+    opacity: .6;
+}
+
+#connectionStatus {
+    position: absolute;
+    right: 24px;
+    bottom: 18px;
+    opacity: .35;
+    font-size: 13px;
+}
+
+/* =========================================================
+   COUNTDOWN
+========================================================= */
+
+#countdown {
+    display: none;
+    position: absolute;
+    inset: 0;
+    z-index: 30;
+    background: rgba(2,4,8,.92);
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.countdown-label {
+    opacity: .55;
+    font-size: clamp(18px, 2vw, 30px);
+    letter-spacing: .2em;
+}
+
+#countdownNumber {
+    margin-top: 15px;
+    font-size: clamp(130px, 24vw, 360px);
+    line-height: .9;
+    font-weight: 900;
+    text-shadow: 0 0 70px rgba(255,255,255,.18);
+}
+
+/* =========================================================
+   GAME
+========================================================= */
+
+#game {
+    display: none;
+    position: absolute;
+    inset: 0;
+}
+
+#gameCanvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+#scoreboard {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    pointer-events: none;
+}
+
+.score-row {
+    min-width: 170px;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 8px 12px;
+    border-radius: 12px;
+    background: rgba(0,0,0,.4);
+    backdrop-filter: blur(6px);
+    font-size: clamp(12px, 1.2vw, 18px);
+}
+
+.score-dot {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+}
+
+.score-name {
+    flex: 1;
+    font-weight: 700;
+}
+
+.score-value {
+    font-weight: 900;
+}
+
+.dead {
+    opacity: .3;
+}
+
+/* =========================================================
+   GAME OVER
+========================================================= */
+
+#gameOver {
+    display: none;
+    position: absolute;
+    inset: 0;
+    z-index: 50;
+    background: rgba(2,4,8,.94);
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.game-over-title {
+    opacity: .6;
+    letter-spacing: .25em;
+    font-size: clamp(16px, 2vw, 30px);
+}
+
+#winnerName {
+    margin-top: 10px;
+    font-size: clamp(50px, 8vw, 120px);
+    font-weight: 900;
+    text-align: center;
+}
+
+.winner-label {
+    margin-top: 4px;
+    opacity: .55;
+    font-size: clamp(15px, 1.6vw, 24px);
+}
+
+#finalScores {
+    width: min(600px, 80vw);
+    margin-top: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.final-score {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 18px;
+    border-radius: 14px;
+    background: rgba(255,255,255,.06);
+}
+
+.final-position {
+    width: 35px;
+    opacity: .5;
+}
+
+.final-name {
+    flex: 1;
+    font-weight: 800;
+}
+
+.final-points {
+    font-weight: 900;
+}
+
+.new-game-info {
+    margin-top: 30px;
+    opacity: .4;
+    font-size: clamp(12px, 1.3vw, 18px);
+}
+
+/* =========================================================
+   SMALL SCREEN
+========================================================= */
+
+@media (max-width: 850px) {
+    .lobby-content {
+        grid-template-columns: 1fr;
+        gap: 20px;
+        overflow-y: auto;
+        padding: 20px 0;
+    }
+
+    #qr {
+        width: 230px;
+        height: 230px;
+        min-width: 0;
+        min-height: 0;
+    }
+
+    .logo {
+        font-size: 34px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div id="app">
+
+    <div class="grid"></div>
+
+    <!-- =====================================================
+         LOBBY
+    ====================================================== -->
+
+    <section id="lobby">
+
+        <div class="logo">CUBER</div>
+        <div class="subtitle">SNAKE 360</div>
+
+        <div class="lobby-content">
+
+            <div class="join-side">
+
+                <div class="join-title">SCAN TO JOIN</div>
+
+                <div id="qr"></div>
+
+                <div class="room-label">ROOM CODE</div>
+
+                <div id="roomCode">----</div>
+
+                <div class="join-url">
+                    cubergames.com/join/
+                </div>
+
+            </div>
+
+
+            <div class="players-side">
+
+                <div class="players-header">
+
+                    <div class="players-title">
+                        PLAYERS
+                    </div>
+
+                    <div id="playerCount">
+                        0 / 4
+                    </div>
+
+                </div>
+
+                <div id="players"></div>
+
+                <div id="modeDisplay" class="mode-display">
+                    Waiting for host...
+                </div>
+
+            </div>
+
+        </div>
+
+        <div id="connectionStatus">
+            Connecting...
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         COUNTDOWN
+    ====================================================== -->
+
+    <section id="countdown">
+
+        <div class="countdown-label">
+            GET READY
+        </div>
+
+        <div id="countdownNumber">
+            3
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         GAME
+    ====================================================== -->
+
+    <section id="game">
+
+        <canvas id="gameCanvas"></canvas>
+
+        <div id="scoreboard"></div>
+
+    </section>
+
+
+    <!-- =====================================================
+         GAME OVER
+    ====================================================== -->
+
+    <section id="gameOver">
+
+        <div class="game-over-title">
+            GAME OVER
+        </div>
+
+        <div id="winnerName">
+            WINNER
+        </div>
+
+        <div class="winner-label">
+            WINNER
+        </div>
+
+        <div id="finalScores"></div>
+
+        <div class="new-game-info">
+            Host can start a new game from the phone
+        </div>
+
+    </section>
+
+</div>
+
+
+<!-- QR CODE LIBRARY -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<script>
+"use strict";
+
+/* ============================================================
+   CONFIGURATION
+============================================================ */
+
+const API_HTTP =
+    "https://game-api.cubergames.com";
+
+const API_WS =
+    "wss://game-api.cubergames.com";
+
+const JOIN_URL =
+    "https://cubergames.com/join/";
+
+const MAX_PLAYERS = 4;
+
+
+/* ============================================================
+   DOM
+============================================================ */
+
+const lobbyEl =
+    document.getElementById("lobby");
+
+const countdownEl =
+    document.getElementById("countdown");
+
+const countdownNumberEl =
+    document.getElementById("countdownNumber");
+
+const gameEl =
+    document.getElementById("game");
+
+const gameOverEl =
+    document.getElementById("gameOver");
+
+const roomCodeEl =
+    document.getElementById("roomCode");
+
+const playersEl =
+    document.getElementById("players");
+
+const playerCountEl =
+    document.getElementById("playerCount");
+
+const modeDisplayEl =
+    document.getElementById("modeDisplay");
+
+const connectionStatusEl =
+    document.getElementById("connectionStatus");
+
+const scoreboardEl =
+    document.getElementById("scoreboard");
+
+const winnerNameEl =
+    document.getElementById("winnerName");
+
+const finalScoresEl =
+    document.getElementById("finalScores");
+
+const canvas =
+    document.getElementById("gameCanvas");
+
+const ctx =
+    canvas.getContext("2d");
+
+
+/* ============================================================
+   NETWORK STATE
+============================================================ */
+
+let roomCode =
+    "";
+
+let socket =
+    null;
+
+let roomState =
+    null;
+
+let reconnectTimer =
+    null;
+
+
+/* ============================================================
+   GAME STATE
+============================================================ */
+
+let gameRunning =
+    false;
+
+let lastFrame =
+    performance.now();
+
+let apple =
+    null;
+
+let worms =
+    new Map();
+
+let gamePlayers =
+    [];
+
+let gameLoopId =
+    null;
+
+let lastStateBroadcast =
+    0;
+
+
+/* ============================================================
+   COLORS
+============================================================ */
+
+const COLORS = {
+
+    red: {
+        body: "#ff3d3d",
+        dark: "#b91527",
+        light: "#ff8585"
+    },
+
+    blue: {
+        body: "#3787ff",
+        dark: "#174da8",
+        light: "#8bbaff"
+    },
+
+    green: {
+        body: "#36d66b",
+        dark: "#16783a",
+        light: "#8af0aa"
+    },
+
+    yellow: {
+        body: "#ffd93d",
+        dark: "#b58a10",
+        light: "#fff08a"
+    }
+};
+
+
+/* ============================================================
+   START TV
+============================================================ */
+
+startTV();
+
+
+async function startTV() {
+
+    try {
+
+        setConnectionStatus(
+            "Creating room..."
+        );
+
+
+        const response =
+            await fetch(
+                API_HTTP + "/create-room",
+                {
+                    cache: "no-store"
+                }
+            );
+
+
+        if (
+            !response.ok
+        ) {
+
+            throw new Error(
+                "Could not create room"
+            );
+        }
+
+
+        const data =
+            await response.json();
+
+
+        roomCode =
+            String(
+                data.room || ""
+            )
+                .toUpperCase()
+                .trim();
+
+
+        if (
+            !roomCode
+        ) {
+
+            throw new Error(
+                "Invalid room code"
+            );
+        }
+
+
+        roomCodeEl.textContent =
+            roomCode;
+
+
+        createQR();
+
+
+        connectTV();
+
+    }
+    catch (error) {
+
+        console.error(error);
+
+        setConnectionStatus(
+            "Server connection failed"
+        );
+
+
+        setTimeout(
+            startTV,
+            3000
+        );
+    }
+}
+
+
+/* ============================================================
+   QR CODE
+============================================================ */
+
+function createQR() {
+
+    const qrContainer =
+        document.getElementById("qr");
+
+
+    qrContainer.innerHTML =
+        "";
+
+
+    const url =
+        JOIN_URL
+        +
+        "?room="
+        +
+        encodeURIComponent(
+            roomCode
+        );
+
+
+    new QRCode(
+        qrContainer,
+        {
+            text:
+                url,
+
+            width:
+                320,
+
+            height:
+                320,
+
+            correctLevel:
+                QRCode.CorrectLevel.M
+        }
+    );
+}
+
+
+/* ============================================================
+   CONNECT TV WEBSOCKET
+============================================================ */
+
+function connectTV() {
+
+    if (
+        !roomCode
+    ) {
+
+        return;
+    }
+
+
+    if (
+        socket
+    ) {
+
+        try {
+            socket.close();
+        }
+        catch {}
+    }
+
+
+    clearTimeout(
+        reconnectTimer
+    );
+
+
+    setConnectionStatus(
+        "Connecting..."
+    );
+
+
+    const url =
+        API_WS
+        +
+        "/room/"
+        +
+        encodeURIComponent(
+            roomCode
+        )
+        +
+        "?role=tv";
+
+
+    socket =
+        new WebSocket(
+            url
+        );
+
+
+    socket.addEventListener(
+        "open",
+        () => {
+
+            setConnectionStatus(
+                "Online"
+            );
+        }
+    );
+
+
+    socket.addEventListener(
+        "message",
+        (event) => {
+
+            handleServerMessage(
+                event.data
+            );
+        }
+    );
+
+
+    socket.addEventListener(
+        "close",
+        () => {
+
+            setConnectionStatus(
+                "Reconnecting..."
+            );
+
+
+            reconnectTimer =
+                setTimeout(
+                    connectTV,
+                    1500
+                );
+        }
+    );
+
+
+    socket.addEventListener(
+        "error",
+        () => {
+
+            setConnectionStatus(
+                "Connection error"
+            );
+        }
+    );
+}
+
+
+/* ============================================================
+   SERVER MESSAGE
+============================================================ */
+
+function handleServerMessage(
+    raw
+) {
+
+    let message;
+
+
+    try {
+
+        message =
+            JSON.parse(
+                raw
+            );
+    }
+    catch {
+
+        return;
+    }
+
+
+    if (
+        message.type === "room_state"
+    ) {
+
+        roomState =
+            message;
+
+
+        renderLobby();
+
+
+        /*
+         * When server returns from game over to lobby.
+         */
+        if (
+            message.status === "lobby"
+            &&
+            !gameRunning
+        ) {
+
+            showLobby();
+        }
+
+
+        return;
+    }
+
+
+    if (
+        message.type === "countdown_start"
+    ) {
+
+        beginCountdown(
+            message
+        );
+
+        return;
+    }
+
+
+    if (
+        message.type === "steer"
+    ) {
+
+        handleSteer(
+            message
+        );
+
+        return;
+    }
+
+
+    if (
+        message.type === "return_to_lobby"
+    ) {
+
+        resetGame();
+        showLobby();
+
+        return;
+    }
+}
+
+
+/* ============================================================
+   LOBBY RENDER
+============================================================ */
+
+function renderLobby() {
+
+    if (
+        !roomState
+    ) {
+
+        return;
+    }
+
+
+    const players =
+        Array.isArray(
+            roomState.players
+        )
+            ? roomState.players
+            : [];
+
+
+    playerCountEl.textContent =
+        players.length
+        +
+        " / "
+        +
+        MAX_PLAYERS;
+
+
+    playersEl.innerHTML =
+        "";
+
+
+    for (
+        const player
+        of players
+    ) {
+
+        const card =
+            document.createElement(
+                "div"
+            );
+
+        card.className =
+            "player-card";
+
+
+        const color =
+            document.createElement(
+                "div"
+            );
+
+        color.className =
+            "player-color";
+
+
+        if (
+            player.color
+            &&
+            COLORS[player.color]
+        ) {
+
+            color.style.background =
+                COLORS[player.color].body;
+
+            color.style.boxShadow =
+                "0 0 20px "
+                +
+                COLORS[player.color].body;
+        }
+        else {
+
+            color.classList.add(
+                "empty"
+            );
+        }
+
+
+        const name =
+            document.createElement(
+                "div"
+            );
+
+        name.className =
+            "player-name";
+
+        name.textContent =
+            player.name || "PLAYER";
+
+
+        card.appendChild(
+            color
+        );
+
+        card.appendChild(
+            name
+        );
+
+
+        if (
+            player.isHost
+        ) {
+
+            const host =
+                document.createElement(
+                    "div"
+                );
+
+            host.className =
+                "host-badge";
+
+            host.textContent =
+                "HOST";
+
+
+            card.appendChild(
+                host
+            );
+        }
+
+
+        playersEl.appendChild(
+            card
+        );
+    }
+
+
+    for (
+        let i = players.length;
+        i < MAX_PLAYERS;
+        i++
+    ) {
+
+        const waiting =
+            document.createElement(
+                "div"
+            );
+
+        waiting.className =
+            "waiting";
+
+        waiting.textContent =
+            "Waiting for player...";
+
+
+        playersEl.appendChild(
+            waiting
+        );
+    }
+
+
+    if (
+        roomState.mode === "SOLO"
+    ) {
+
+        modeDisplayEl.textContent =
+            "MODE: SOLO";
+    }
+    else if (
+        roomState.mode === "MULTI"
+    ) {
+
+        modeDisplayEl.textContent =
+            "MODE: MULTIPLAYER";
+    }
+    else {
+
+        modeDisplayEl.textContent =
+            players.length
+                ? "Host chooses game mode"
+                : "Scan QR code to join";
+    }
+}
+
+
+/* ============================================================
+   COUNTDOWN
+============================================================ */
+
+function beginCountdown(
+    message
+) {
+
+    if (
+        gameRunning
+    ) {
+
+        return;
+    }
+
+
+    /*
+     * Freeze players at the moment the host presses START.
+     */
+
+    const sourcePlayers =
+        Array.isArray(
+            message.players
+        )
+            ? message.players
+            : (
+                roomState
+                &&
+                Array.isArray(
+                    roomState.players
+                )
+                    ? roomState.players
+                    : []
+            );
+
+
+    gamePlayers =
+        sourcePlayers.map(
+            player => ({
+                id:
+                    player.id,
+
+                name:
+                    player.name || "PLAYER",
+
+                color:
+                    player.color || "green"
+            })
+        );
+
+
+    lobbyEl.style.display =
+        "none";
+
+    gameOverEl.style.display =
+        "none";
+
+    gameEl.style.display =
+        "none";
+
+    countdownEl.style.display =
+        "flex";
+
+
+    const duration =
+        Number(
+            message.duration
+        )
+        ||
+        2400;
+
+
+    const started =
+        performance.now();
+
+
+    function tick(
+        now
+    ) {
+
+        const elapsed =
+            now - started;
+
+
+        const remaining =
+            duration - elapsed;
+
+
+        if (
+            remaining <= 0
+        ) {
+
+            countdownNumberEl.textContent =
+                "GO!";
+
+
+            setTimeout(
+                () => {
+
+                    countdownEl.style.display =
+                        "none";
+
+                    startGame();
+
+                },
+                250
+            );
+
+
+            return;
+        }
+
+
+        const ratio =
+            remaining
+            /
+            duration;
+
+
+        if (
+            ratio > 0.66
+        ) {
+
+            countdownNumberEl.textContent =
+                "3";
+        }
+        else if (
+            ratio > 0.33
+        ) {
+
+            countdownNumberEl.textContent =
+                "2";
+        }
+        else {
+
+            countdownNumberEl.textContent =
+                "1";
+        }
+
+
+        requestAnimationFrame(
+            tick
+        );
+    }
+
+
+    requestAnimationFrame(
+        tick
+    );
+}
+
+
+/* ============================================================
+   START GAME
+============================================================ */
+
+function startGame() {
+
+    resizeCanvas();
+
+
+    worms.clear();
+
+
+    const count =
+        gamePlayers.length;
+
+
+    for (
+        let i = 0;
+        i < count;
+        i++
+    ) {
+
+        const player =
+            gamePlayers[i];
+
+
+        const spawn =
+            getSpawnPosition(
+                i,
+                count
+            );
+
+
+        const angle =
+            Math.atan2(
+                canvas.height / 2 - spawn.y,
+                canvas.width / 2 - spawn.x
+            );
+
+
+        const worm =
+            createWorm(
+                player,
+                spawn.x,
+                spawn.y,
+                angle
+            );
+
+
+        worms.set(
+            player.id,
+            worm
+        );
+    }
+
+
+    spawnApple();
+
+
+    gameRunning =
+        true;
+
+
+    gameEl.style.display =
+        "block";
+
+    lobbyEl.style.display =
+        "none";
+
+    countdownEl.style.display =
+        "none";
+
+    gameOverEl.style.display =
+        "none";
+
+
+    renderScoreboard();
+
+
+    sendSocket(
+        {
+            type:
+                "game_running"
+        }
+    );
+
+
+    lastFrame =
+        performance.now();
+
+
+    cancelAnimationFrame(
+        gameLoopId
+    );
+
+
+    gameLoopId =
+        requestAnimationFrame(
+            gameLoop
+        );
+}
+
+
+/* ============================================================
+   CREATE WORM
+============================================================ */
+
+function createWorm(
+    player,
+    x,
+    y,
+    angle
+) {
+
+    const body =
+        [];
+
+
+    const startLength =
+        16;
+
+
+    for (
+        let i = 0;
+        i < startLength;
+        i++
+    ) {
+
+        body.push(
+            {
+                x:
+                    x
+                    -
+                    Math.cos(angle)
+                    *
+                    i
+                    *
+                    7,
+
+                y:
+                    y
+                    -
+                    Math.sin(angle)
+                    *
+                    i
+                    *
+                    7
+            }
+        );
+    }
+
+
+    return {
+
+        id:
+            player.id,
+
+        name:
+            player.name,
+
+        color:
+            player.color,
+
+        alive:
+            true,
+
+        score:
+            0,
+
+        x:
+            x,
+
+        y:
+            y,
+
+        angle:
+            angle,
+
+        inputX:
+            Math.cos(angle),
+
+        inputY:
+            Math.sin(angle),
+
+        speed:
+            185,
+
+        body:
+            body,
+
+        targetLength:
+            startLength,
+
+        mouthUntil:
+            0
+    };
+}
+
+
+/* ============================================================
+   SPAWN POSITIONS
+============================================================ */
+
+function getSpawnPosition(
+    index,
+    count
+) {
+
+    const cx =
+        canvas.width / 2;
+
+    const cy =
+        canvas.height / 2;
+
+    const radius =
+        Math.min(
+            canvas.width,
+            canvas.height
+        )
+        *
+        0.27;
+
+
+    const angle =
+        (
+            Math.PI * 2 * index
+            /
+            Math.max(
+                count,
+                1
+            )
+        )
+        -
+        Math.PI / 2;
+
+
+    return {
+
+        x:
+            cx
+            +
+            Math.cos(angle)
+            *
+            radius,
+
+        y:
+            cy
+            +
+            Math.sin(angle)
+            *
+            radius
+    };
+}
+
+
+/* ============================================================
+   JOYSTICK INPUT
+============================================================ */
+
+function handleSteer(
+    message
+) {
+
+    if (
+        !gameRunning
+    ) {
+
+        return;
+    }
+
+
+    const worm =
+        worms.get(
+            Number(
+                message.playerId
+            )
+        );
+
+
+    if (
+        !worm
+        ||
+        !worm.alive
+    ) {
+
+        return;
+    }
+
+
+    const x =
+        Number(
+            message.x
+        );
+
+    const y =
+        Number(
+            message.y
+        );
+
+
+    if (
+        !Number.isFinite(x)
+        ||
+        !Number.isFinite(y)
+    ) {
+
+        return;
+    }
+
+
+    const magnitude =
+        Math.hypot(
+            x,
+            y
+        );
+
+
+    if (
+        magnitude < 0.08
+    ) {
+
+        return;
+    }
+
+
+    worm.inputX =
+        x / magnitude;
+
+    worm.inputY =
+        y / magnitude;
+}
+
+
+/* ============================================================
+   GAME LOOP
+============================================================ */
+
+function gameLoop(
+    now
+) {
+
+    if (
+        !gameRunning
+    ) {
+
+        return;
+    }
+
+
+    const dt =
+        Math.min(
+            (now - lastFrame) / 1000,
+            0.04
+        );
+
+
+    lastFrame =
+        now;
+
+
+    updateGame(
+        dt,
+        now
+    );
+
+
+    drawGame(
+        now
+    );
+
+
+    if (
+        now - lastStateBroadcast > 200
+    ) {
+
+        lastStateBroadcast =
+            now;
+
+        broadcastTVState();
+    }
+
+
+    gameLoopId =
+        requestAnimationFrame(
+            gameLoop
+        );
+}
+
+
+/* ============================================================
+   UPDATE GAME
+============================================================ */
+
+function updateGame(
+    dt,
+    now
+) {
+
+    const margin =
+        16;
+
+
+    for (
+        const worm
+        of worms.values()
+    ) {
+
+        if (
+            !worm.alive
+        ) {
+
+            continue;
+        }
+
+
+        /*
+         * Smoothly turn toward joystick direction.
+         */
+
+        const targetAngle =
+            Math.atan2(
+                worm.inputY,
+                worm.inputX
+            );
+
+
+        let difference =
+            normalizeAngle(
+                targetAngle
+                -
+                worm.angle
+            );
+
+
+        const turnSpeed =
+            5.5;
+
+
+        const maxTurn =
+            turnSpeed
+            *
+            dt;
+
+
+        difference =
+            clamp(
+                difference,
+                -maxTurn,
+                maxTurn
+            );
+
+
+        worm.angle +=
+            difference;
+
+
+        const oldX =
+            worm.x;
+
+        const oldY =
+            worm.y;
+
+
+        worm.x +=
+            Math.cos(
+                worm.angle
+            )
+            *
+            worm.speed
+            *
+            dt;
+
+
+        worm.y +=
+            Math.sin(
+                worm.angle
+            )
+            *
+            worm.speed
+            *
+            dt;
+
+
+        /*
+         * Wall collision.
+         */
+
+        if (
+            worm.x < margin
+            ||
+            worm.x > canvas.width - margin
+            ||
+            worm.y < margin
+            ||
+            worm.y > canvas.height - margin
+        ) {
+
+            killWorm(
+                worm
+            );
+
+            continue;
+        }
+
+
+        const distance =
+            Math.hypot(
+                worm.x - oldX,
+                worm.y - oldY
+            );
+
+
+        if (
+            distance > 0
+        ) {
+
+            worm.body.unshift(
+                {
+                    x:
+                        worm.x,
+
+                    y:
+                        worm.y
+                }
+            );
+        }
+
+
+        while (
+            worm.body.length
+            >
+            worm.targetLength
+        ) {
+
+            worm.body.pop();
+        }
+
+
+        /*
+         * Apple collision.
+         */
+
+        if (
+            apple
+        ) {
+
+            const appleDistance =
+                Math.hypot(
+                    worm.x - apple.x,
+                    worm.y - apple.y
+                );
+
+
+            if (
+                appleDistance < 29
+            ) {
+
+                worm.score +=
+                    1;
+
+
+                worm.targetLength +=
+                    5;
+
+
+                worm.mouthUntil =
+                    now + 320;
+
+
+                spawnApple();
+
+
+                renderScoreboard();
+            }
+        }
+    }
+
+
+    checkWormCollisions();
+
+
+    const alive =
+        Array.from(
+            worms.values()
+        )
+            .filter(
+                worm =>
+                    worm.alive
+            );
+
+
+    if (
+        alive.length === 0
+    ) {
+
+        finishGame();
+    }
+}
+
+
+/* ============================================================
+   WORM COLLISIONS
+============================================================ */
+
+function checkWormCollisions() {
+
+    const living =
+        Array.from(
+            worms.values()
+        )
+            .filter(
+                worm =>
+                    worm.alive
+            );
+
+
+    for (
+        const worm
+        of living
+    ) {
+
+        for (
+            const other
+            of worms.values()
+        ) {
+
+            if (
+                !other.alive
+            ) {
+
+                continue;
+            }
+
+
+            /*
+             * Skip the first part of own body so the head
+             * does not collide with itself immediately.
+             */
+
+            const start =
+                worm.id === other.id
+                    ? 14
+                    : 3;
+
+
+            for (
+                let i = start;
+                i < other.body.length;
+                i += 2
+            ) {
+
+                const point =
+                    other.body[i];
+
+
+                const distance =
+                    Math.hypot(
+                        worm.x - point.x,
+                        worm.y - point.y
+                    );
+
+
+                if (
+                    distance < 13
+                ) {
+
+                    killWorm(
+                        worm
+                    );
+
+                    break;
+                }
+            }
+
+
+            if (
+                !worm.alive
+            ) {
+
+                break;
+            }
+        }
+    }
+}
+
+
+/* ============================================================
+   KILL WORM
+============================================================ */
+
+function killWorm(
+    worm
+) {
+
+    if (
+        !worm.alive
+    ) {
+
+        return;
+    }
+
+
+    worm.alive =
+        false;
+
+
+    /*
+     * Dead worm disappears immediately.
+     */
+
+    worm.body =
+        [];
+
+
+    renderScoreboard();
+}
+
+
+/* ============================================================
+   APPLE
+============================================================ */
+
+function spawnApple() {
+
+    const padding =
+        80;
+
+
+    apple =
+        {
+            x:
+                randomBetween(
+                    padding,
+                    Math.max(
+                        padding + 1,
+                        canvas.width - padding
+                    )
+                ),
+
+            y:
+                randomBetween(
+                    padding,
+                    Math.max(
+                        padding + 1,
+                        canvas.height - padding
+                    )
+                )
+        };
+}
+
+
+/* ============================================================
+   DRAW GAME
+============================================================ */
+
+function drawGame(
+    now
+) {
+
+    ctx.clearRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+
+    drawGameBackground();
+
+
+    if (
+        apple
+    ) {
+
+        drawApple(
+            apple.x,
+            apple.y
+        );
+    }
+
+
+    for (
+        const worm
+        of worms.values()
+    ) {
+
+        if (
+            worm.alive
+        ) {
+
+            drawWorm(
+                worm,
+                now
+            );
+        }
+    }
+}
+
+
+/* ============================================================
+   GAME BACKGROUND
+============================================================ */
+
+function drawGameBackground() {
+
+    const gradient =
+        ctx.createRadialGradient(
+            canvas.width / 2,
+            canvas.height / 2,
+            0,
+            canvas.width / 2,
+            canvas.height / 2,
+            Math.max(
+                canvas.width,
+                canvas.height
+            )
+        );
+
+
+    gradient.addColorStop(
+        0,
+        "#101827"
+    );
+
+    gradient.addColorStop(
+        1,
+        "#030507"
+    );
+
+
+    ctx.fillStyle =
+        gradient;
+
+
+    ctx.fillRect(
+        0,
+        0,
+        canvas.width,
+        canvas.height
+    );
+
+
+    ctx.strokeStyle =
+        "rgba(255,255,255,.035)";
+
+    ctx.lineWidth =
+        1;
+
+
+    const gridSize =
+        50;
+
+
+    for (
+        let x = 0;
+        x < canvas.width;
+        x += gridSize
+    ) {
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            x,
+            0
+        );
+
+        ctx.lineTo(
+            x,
+            canvas.height
+        );
+
+        ctx.stroke();
+    }
+
+
+    for (
+        let y = 0;
+        y < canvas.height;
+        y += gridSize
+    ) {
+
+        ctx.beginPath();
+
+        ctx.moveTo(
+            0,
+            y
+        );
+
+        ctx.lineTo(
+            canvas.width,
+            y
+        );
+
+        ctx.stroke();
+    }
+}
+
+
+/* ============================================================
+   DRAW APPLE
+============================================================ */
+
+function drawApple(
+    x,
+    y
+) {
+
+    ctx.save();
+
+
+    ctx.translate(
+        x,
+        y
+    );
+
+
+    /*
+     * Shadow.
+     */
+
+    ctx.beginPath();
+
+    ctx.fillStyle =
+        "rgba(0,0,0,.3)";
+
+    ctx.ellipse(
+        2,
+        18,
+        18,
+        7,
+        0,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fill();
+
+
+    /*
+     * Apple body.
+     */
+
+    const gradient =
+        ctx.createRadialGradient(
+            -8,
+            -10,
+            2,
+            0,
+            0,
+            25
+        );
+
+
+    gradient.addColorStop(
+        0,
+        "#ff8585"
+    );
+
+    gradient.addColorStop(
+        .35,
+        "#ff354f"
+    );
+
+    gradient.addColorStop(
+        1,
+        "#a80720"
+    );
+
+
+    ctx.fillStyle =
+        gradient;
+
+
+    ctx.beginPath();
+
+    ctx.arc(
+        -8,
+        2,
+        15,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.arc(
+        8,
+        2,
+        15,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fill();
+
+
+    /*
+     * Stem.
+     */
+
+    ctx.strokeStyle =
+        "#684018";
+
+    ctx.lineWidth =
+        5;
+
+    ctx.lineCap =
+        "round";
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        0,
+        -10
+    );
+
+    ctx.lineTo(
+        3,
+        -25
+    );
+
+    ctx.stroke();
+
+
+    /*
+     * Leaf.
+     */
+
+    ctx.fillStyle =
+        "#43d66f";
+
+    ctx.beginPath();
+
+    ctx.ellipse(
+        11,
+        -20,
+        11,
+        5,
+        -.45,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fill();
+
+
+    ctx.restore();
+}
+
+
+/* ============================================================
+   DRAW WORM
+============================================================ */
+
+function drawWorm(
+    worm,
+    now
+) {
+
+    const palette =
+        COLORS[worm.color]
+        ||
+        COLORS.green;
+
+
+    const body =
+        worm.body;
+
+
+    if (
+        body.length < 2
+    ) {
+
+        return;
+    }
+
+
+    /*
+     * Thick connected body.
+     */
+
+    ctx.save();
+
+
+    ctx.lineCap =
+        "round";
+
+    ctx.lineJoin =
+        "round";
+
+
+    /*
+     * Shadow.
+     */
+
+    ctx.strokeStyle =
+        "rgba(0,0,0,.35)";
+
+    ctx.lineWidth =
+        28;
+
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        body[0].x + 3,
+        body[0].y + 5
+    );
+
+
+    for (
+        let i = 1;
+        i < body.length;
+        i++
+    ) {
+
+        ctx.lineTo(
+            body[i].x + 3,
+            body[i].y + 5
+        );
+    }
+
+
+    ctx.stroke();
+
+
+    /*
+     * Main body.
+     */
+
+    ctx.strokeStyle =
+        palette.body;
+
+    ctx.lineWidth =
+        24;
+
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        body[0].x,
+        body[0].y
+    );
+
+
+    for (
+        let i = 1;
+        i < body.length;
+        i++
+    ) {
+
+        ctx.lineTo(
+            body[i].x,
+            body[i].y
+        );
+    }
+
+
+    ctx.stroke();
+
+
+    /*
+     * Body highlight.
+     */
+
+    ctx.strokeStyle =
+        palette.light;
+
+    ctx.globalAlpha =
+        .26;
+
+    ctx.lineWidth =
+        7;
+
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+        body[0].x - 3,
+        body[0].y - 3
+    );
+
+
+    for (
+        let i = 1;
+        i < body.length;
+        i++
+    ) {
+
+        ctx.lineTo(
+            body[i].x - 3,
+            body[i].y - 3
+        );
+    }
+
+
+    ctx.stroke();
+
+
+    ctx.globalAlpha =
+        1;
+
+
+    /*
+     * Head.
+     */
+
+    ctx.translate(
+        worm.x,
+        worm.y
+    );
+
+
+    ctx.rotate(
+        worm.angle
+    );
+
+
+    const headGradient =
+        ctx.createRadialGradient(
+            -7,
+            -7,
+            3,
+            0,
+            0,
+            24
+        );
+
+
+    headGradient.addColorStop(
+        0,
+        palette.light
+    );
+
+    headGradient.addColorStop(
+        .5,
+        palette.body
+    );
+
+    headGradient.addColorStop(
+        1,
+        palette.dark
+    );
+
+
+    ctx.fillStyle =
+        headGradient;
+
+
+    ctx.beginPath();
+
+    ctx.ellipse(
+        0,
+        0,
+        21,
+        18,
+        0,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fill();
+
+
+    /*
+     * Eyes.
+     */
+
+    drawEye(
+        7,
+        -8
+    );
+
+    drawEye(
+        7,
+        8
+    );
+
+
+    /*
+     * Mouth opens briefly after eating an apple.
+     */
+
+    if (
+        now < worm.mouthUntil
+    ) {
+
+        ctx.fillStyle =
+            "#25040a";
+
+
+        ctx.beginPath();
+
+        ctx.ellipse(
+            16,
+            0,
+            8,
+            6,
+            0,
+            0,
+            Math.PI * 2
+        );
+
+        ctx.fill();
+
+
+        ctx.fillStyle =
+            "#ff7185";
+
+
+        ctx.beginPath();
+
+        ctx.ellipse(
+            18,
+            1,
+            4,
+            2.5,
+            0,
+            0,
+            Math.PI * 2
+        );
+
+        ctx.fill();
+    }
+    else {
+
+        ctx.strokeStyle =
+            "#4a1018";
+
+        ctx.lineWidth =
+            2.5;
+
+        ctx.lineCap =
+            "round";
+
+
+        ctx.beginPath();
+
+        ctx.arc(
+            12,
+            0,
+            7,
+            -.7,
+            .7
+        );
+
+        ctx.stroke();
+    }
+
+
+    ctx.restore();
+}
+
+
+/* ============================================================
+   EYE
+============================================================ */
+
+function drawEye(
+    x,
+    y
+) {
+
+    ctx.fillStyle =
+        "#ffffff";
+
+
+    ctx.beginPath();
+
+    ctx.arc(
+        x,
+        y,
+        5.5,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fill();
+
+
+    ctx.fillStyle =
+        "#080b10";
+
+
+    ctx.beginPath();
+
+    ctx.arc(
+        x + 2,
+        y,
+        2.6,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fill();
+}
+
+
+/* ============================================================
+   SCOREBOARD
+============================================================ */
+
+function renderScoreboard() {
+
+    scoreboardEl.innerHTML =
+        "";
+
+
+    const sorted =
+        Array.from(
+            worms.values()
+        )
+            .sort(
+                (a, b) =>
+                    b.score - a.score
+            );
+
+
+    for (
+        const worm
+        of sorted
+    ) {
+
+        const row =
+            document.createElement(
+                "div"
+            );
+
+        row.className =
+            "score-row"
+            +
+            (
+                worm.alive
+                    ? ""
+                    : " dead"
+            );
+
+
+        const dot =
+            document.createElement(
+                "div"
+            );
+
+        dot.className =
+            "score-dot";
+
+
+        dot.style.background =
+            COLORS[worm.color]
+                ? COLORS[worm.color].body
+                : "#fff";
+
+
+        const name =
+            document.createElement(
+                "div"
+            );
+
+        name.className =
+            "score-name";
+
+        name.textContent =
+            worm.name;
+
+
+        const value =
+            document.createElement(
+                "div"
+            );
+
+        value.className =
+            "score-value";
+
+        value.textContent =
+            worm.score;
+
+
+        row.appendChild(
+            dot
+        );
+
+        row.appendChild(
+            name
+        );
+
+        row.appendChild(
+            value
+        );
+
+
+        scoreboardEl.appendChild(
+            row
+        );
+    }
+}
+
+
+/* ============================================================
+   TV STATE FOR PHONES
+============================================================ */
+
+function broadcastTVState() {
+
+    if (
+        !gameRunning
+    ) {
+
+        return;
+    }
+
+
+    const players =
+        Array.from(
+            worms.values()
+        )
+            .map(
+                worm => ({
+                    id:
+                        worm.id,
+
+                    score:
+                        worm.score,
+
+                    alive:
+                        worm.alive
+                })
+            );
+
+
+    sendSocket(
+        {
+            type:
+                "tv_state",
+
+            state:
+                {
+                    players:
+                        players
+                }
+        }
+    );
+}
+
+
+/* ============================================================
+   FINISH GAME
+============================================================ */
+
+function finishGame() {
+
+    if (
+        !gameRunning
+    ) {
+
+        return;
+    }
+
+
+    gameRunning =
+        false;
+
+
+    cancelAnimationFrame(
+        gameLoopId
+    );
+
+
+    const results =
+        Array.from(
+            worms.values()
+        )
+            .map(
+                worm => ({
+                    id:
+                        worm.id,
+
+                    name:
+                        worm.name,
+
+                    color:
+                        worm.color,
+
+                    score:
+                        worm.score
+                })
+            )
+            .sort(
+                (a, b) =>
+                    b.score - a.score
+            );
+
+
+    const winner =
+        results.length
+            ? results[0]
+            : null;
+
+
+    sendSocket(
+        {
+            type:
+                "game_over",
+
+            results:
+                results,
+
+            winner:
+                winner
+        }
+    );
+
+
+    showGameOver(
+        results,
+        winner
+    );
+}
+
+
+/* ============================================================
+   SHOW GAME OVER
+============================================================ */
+
+function showGameOver(
+    results,
+    winner
+) {
+
+    gameEl.style.display =
+        "none";
+
+    countdownEl.style.display =
+        "none";
+
+    lobbyEl.style.display =
+        "none";
+
+    gameOverEl.style.display =
+        "flex";
+
+
+    winnerNameEl.textContent =
+        winner
+            ? winner.name
+            : "NO WINNER";
+
+
+    if (
+        winner
+        &&
+        COLORS[winner.color]
+    ) {
+
+        winnerNameEl.style.color =
+            COLORS[winner.color].body;
+    }
+    else {
+
+        winnerNameEl.style.color =
+            "white";
+    }
+
+
+    finalScoresEl.innerHTML =
+        "";
+
+
+    results.forEach(
+        (
+            result,
+            index
+        ) => {
+
+            const row =
+                document.createElement(
+                    "div"
+                );
+
+            row.className =
+                "final-score";
+
+
+            const position =
+                document.createElement(
+                    "div"
+                );
+
+            position.className =
+                "final-position";
+
+            position.textContent =
+                "#"
+                +
+                (
+                    index + 1
+                );
+
+
+            const dot =
+                document.createElement(
+                    "div"
+                );
+
+            dot.className =
+                "score-dot";
+
+            dot.style.background =
+                COLORS[result.color]
+                    ? COLORS[result.color].body
+                    : "#fff";
+
+
+            const name =
+                document.createElement(
+                    "div"
+                );
+
+            name.className =
+                "final-name";
+
+            name.textContent =
+                result.name;
+
+
+            const points =
+                document.createElement(
+                    "div"
+                );
+
+            points.className =
+                "final-points";
+
+            points.textContent =
+                result.score
+                +
+                (
+                    result.score === 1
+                        ? " POINT"
+                        : " POINTS"
+                );
+
+
+            row.appendChild(
+                position
+            );
+
+            row.appendChild(
+                dot
+            );
+
+            row.appendChild(
+                name
+            );
+
+            row.appendChild(
+                points
+            );
+
+
+            finalScoresEl.appendChild(
+                row
+            );
+        }
+    );
+}
+
+
+/* ============================================================
+   RESET
+============================================================ */
+
+function resetGame() {
+
+    gameRunning =
+        false;
+
+
+    cancelAnimationFrame(
+        gameLoopId
+    );
+
+
+    worms.clear();
+
+    gamePlayers =
+        [];
+
+    apple =
+        null;
+
+
+    scoreboardEl.innerHTML =
+        "";
+
+    finalScoresEl.innerHTML =
+        "";
+}
+
+
+/* ============================================================
+   SHOW LOBBY
+============================================================ */
+
+function showLobby() {
+
+    lobbyEl.style.display =
+        "flex";
+
+    countdownEl.style.display =
+        "none";
+
+    gameEl.style.display =
+        "none";
+
+    gameOverEl.style.display =
+        "none";
+
+
+    renderLobby();
+}
+
+
+/* ============================================================
+   SOCKET SEND
+============================================================ */
+
+function sendSocket(
+    message
+) {
+
+    if (
+        !socket
+        ||
+        socket.readyState !== WebSocket.OPEN
+    ) {
+
+        return;
+    }
+
+
+    socket.send(
+        JSON.stringify(
+            message
+        )
+    );
+}
+
+
+/* ============================================================
+   CONNECTION STATUS
+============================================================ */
+
+function setConnectionStatus(
+    text
+) {
+
+    connectionStatusEl.textContent =
+        text;
+}
+
+
+/* ============================================================
+   CANVAS SIZE
+============================================================ */
+
+function resizeCanvas() {
+
+    const dpr =
+        Math.min(
+            window.devicePixelRatio || 1,
+            2
+        );
+
+
+    const width =
+        window.innerWidth;
+
+    const height =
+        window.innerHeight;
+
+
+    canvas.width =
+        Math.floor(
+            width * dpr
+        );
+
+    canvas.height =
+        Math.floor(
+            height * dpr
+        );
+
+
+    canvas.style.width =
+        width + "px";
+
+    canvas.style.height =
+        height + "px";
+
+
+    ctx.setTransform(
+        dpr,
+        0,
+        0,
+        dpr,
+        0,
+        0
+    );
+
+
+    /*
+     * Game coordinates use CSS pixels.
+     */
+
+    canvas.widthCSS =
+        width;
+
+    canvas.heightCSS =
+        height;
+
+
+    /*
+     * Reset actual logical canvas dimensions by using
+     * transform-aware helper properties.
+     */
+
+    Object.defineProperty(
+        canvas,
+        "gameWidth",
+        {
+            configurable: true,
+            value: width
+        }
+    );
+
+    Object.defineProperty(
+        canvas,
+        "gameHeight",
+        {
+            configurable: true,
+            value: height
+        }
+    );
+
+
+    /*
+     * We use these dimensions in game logic.
+     */
+    canvas.logicalWidth =
+        width;
+
+    canvas.logicalHeight =
+        height;
+}
+
+
+/*
+ * Because canvas.width is physical pixels when DPR > 1,
+ * expose logical dimensions to the game through wrappers.
+ */
+
+const originalCanvasWidthDescriptor =
+    Object.getOwnPropertyDescriptor(
+        HTMLCanvasElement.prototype,
+        "width"
+    );
+
+
+/* ============================================================
+   IMPORTANT:
+   Return logical screen dimensions to game calculations.
+============================================================ */
+
+function gameWidth() {
+    return window.innerWidth;
+}
+
+function gameHeight() {
+    return window.innerHeight;
+}
+
+
+/*
+ * Override spawn/update functions' dimension source by proxy.
+ * This keeps drawing coordinates and game coordinates identical.
+ */
+
+Object.defineProperty(
+    canvas,
+    "gameW",
+    {
+        get() {
+            return gameWidth();
+        }
+    }
+);
+
+Object.defineProperty(
+    canvas,
+    "gameH",
+    {
+        get() {
+            return gameHeight();
+        }
+    }
+);
+
+
+/* ============================================================
+   NORMALIZE GAME DIMENSIONS
+
+   Canvas drawing uses CSS coordinates because setTransform()
+   scales for DPR. Replace physical width/height reads in the
+   game with logical values through this helper.
+============================================================ */
+
+function logicalCanvasWidth() {
+    return window.innerWidth;
+}
+
+function logicalCanvasHeight() {
+    return window.innerHeight;
+}
+
+
+/* ============================================================
+   PATCH GAME FUNCTIONS TO CSS PIXEL SIZE
+============================================================ */
+
+/*
+ * The functions below rely on window size rather than the
+ * backing-store canvas size.
+ */
+
+const canvasDimensions =
+    {
+        get width() {
+            return window.innerWidth;
+        },
+
+        get height() {
+            return window.innerHeight;
+        }
+    };
+
+
+/* ============================================================
+   RESIZE
+============================================================ */
+
+window.addEventListener(
+    "resize",
+    () => {
+
+        if (
+            gameRunning
+        ) {
+
+            resizeCanvas();
+        }
+    }
+);
+
+
+/* ============================================================
+   HELPERS
+============================================================ */
+
+function normalizeAngle(
+    angle
+) {
+
+    while (
+        angle > Math.PI
+    ) {
+
+        angle -=
+            Math.PI * 2;
+    }
+
+
+    while (
+        angle < -Math.PI
+    ) {
+
+        angle +=
+            Math.PI * 2;
+    }
+
+
+    return angle;
+}
+
+
+function clamp(
+    value,
+    min,
+    max
+) {
+
+    return Math.max(
+        min,
+        Math.min(
+            max,
+            value
+        )
+    );
+}
+
+
+function randomBetween(
+    min,
+    max
+) {
+
+    return min
+        +
+        Math.random()
+        *
+        (
+            max - min
+        );
+}
+
+
+/* ============================================================
+   USE LOGICAL DIMENSIONS
+
+   Replace canvas physical dimensions with browser dimensions
+   in the handful of calculations where it matters.
+============================================================ */
+
+const oldGetSpawnPosition =
+    getSpawnPosition;
+
+
+getSpawnPosition =
+    function(
+        index,
+        count
+    ) {
+
+        const width =
+            logicalCanvasWidth();
+
+        const height =
+            logicalCanvasHeight();
+
+        const cx =
+            width / 2;
+
+        const cy =
+            height / 2;
+
+        const radius =
+            Math.min(
+                width,
+                height
+            )
+            *
+            0.27;
+
+
+        const angle =
+            (
+                Math.PI * 2 * index
+                /
+                Math.max(
+                    count,
+                    1
+                )
+            )
+            -
+            Math.PI / 2;
+
+
+        return {
+
+            x:
+                cx
+                +
+                Math.cos(angle)
+                *
+                radius,
+
+            y:
+                cy
+                +
+                Math.sin(angle)
+                *
+                radius
+        };
+    };
+
+
+const oldSpawnApple =
+    spawnApple;
+
+
+spawnApple =
+    function() {
+
+        const padding =
+            80;
+
+        const width =
+            logicalCanvasWidth();
+
+        const height =
+            logicalCanvasHeight();
+
+
+        apple =
+            {
+                x:
+                    randomBetween(
+                        padding,
+                        Math.max(
+                            padding + 1,
+                            width - padding
+                        )
+                    ),
+
+                y:
+                    randomBetween(
+                        padding,
+                        Math.max(
+                            padding + 1,
+                            height - padding
+                        )
+                    )
+            };
+    };
+
+
+const oldUpdateGame =
+    updateGame;
+
+
+updateGame =
+    function(
+        dt,
+        now
+    ) {
+
+        const width =
+            logicalCanvasWidth();
+
+        const height =
+            logicalCanvasHeight();
+
+        const margin =
+            16;
+
+
+        for (
+            const worm
+            of worms.values()
+        ) {
+
+            if (
+                !worm.alive
+            ) {
+
+                continue;
+            }
+
+
+            const targetAngle =
+                Math.atan2(
+                    worm.inputY,
+                    worm.inputX
+                );
+
+
+            let difference =
+                normalizeAngle(
+                    targetAngle
+                    -
+                    worm.angle
+                );
+
+
+            const turnSpeed =
+                5.5;
+
+
+            const maxTurn =
+                turnSpeed
+                *
+                dt;
+
+
+            difference =
+                clamp(
+                    difference,
+                    -maxTurn,
+                    maxTurn
+                );
+
+
+            worm.angle +=
+                difference;
+
+
+            const oldX =
+                worm.x;
+
+            const oldY =
+                worm.y;
+
+
+            worm.x +=
+                Math.cos(
+                    worm.angle
+                )
+                *
+                worm.speed
+                *
+                dt;
+
+
+            worm.y +=
+                Math.sin(
+                    worm.angle
+                )
+                *
+                worm.speed
+                *
+                dt;
+
+
+            if (
+                worm.x < margin
+                ||
+                worm.x > width - margin
+                ||
+                worm.y < margin
+                ||
+                worm.y > height - margin
+            ) {
+
+                killWorm(
+                    worm
+                );
+
+                continue;
+            }
+
+
+            const distance =
+                Math.hypot(
+                    worm.x - oldX,
+                    worm.y - oldY
+                );
+
+
+            if (
+                distance > 0
+            ) {
+
+                worm.body.unshift(
+                    {
+                        x:
+                            worm.x,
+
+                        y:
+                            worm.y
+                    }
+                );
+            }
+
+
+            while (
+                worm.body.length
+                >
+                worm.targetLength
+            ) {
+
+                worm.body.pop();
+            }
+
+
+            if (
+                apple
+            ) {
+
+                const appleDistance =
+                    Math.hypot(
+                        worm.x - apple.x,
+                        worm.y - apple.y
+                    );
+
+
+                if (
+                    appleDistance < 29
+                ) {
+
+                    worm.score +=
+                        1;
+
+
+                    worm.targetLength +=
+                        5;
+
+
+                    worm.mouthUntil =
+                        now + 320;
+
+
+                    spawnApple();
+
+
+                    renderScoreboard();
+                }
+            }
+        }
+
+
+        checkWormCollisions();
+
+
+        const alive =
+            Array.from(
+                worms.values()
+            )
+                .filter(
+                    worm =>
+                        worm.alive
+                );
+
+
+        if (
+            alive.length === 0
+        ) {
+
+            finishGame();
+        }
+    };
+
+
+const oldDrawGameBackground =
+    drawGameBackground;
+
+
+drawGameBackground =
+    function() {
+
+        const width =
+            logicalCanvasWidth();
+
+        const height =
+            logicalCanvasHeight();
+
+
+        const gradient =
+            ctx.createRadialGradient(
+                width / 2,
+                height / 2,
+                0,
+                width / 2,
+                height / 2,
+                Math.max(
+                    width,
+                    height
+                )
+            );
+
+
+        gradient.addColorStop(
+            0,
+            "#101827"
+        );
+
+        gradient.addColorStop(
+            1,
+            "#030507"
+        );
+
+
+        ctx.fillStyle =
+            gradient;
+
+
+        ctx.fillRect(
+            0,
+            0,
+            width,
+            height
+        );
+
+
+        ctx.strokeStyle =
+            "rgba(255,255,255,.035)";
+
+        ctx.lineWidth =
+            1;
+
+
+        const gridSize =
+            50;
+
+
+        for (
+            let x = 0;
+            x < width;
+            x += gridSize
+        ) {
+
+            ctx.beginPath();
+
+            ctx.moveTo(
+                x,
+                0
+            );
+
+            ctx.lineTo(
+                x,
+                height
+            );
+
+            ctx.stroke();
+        }
+
+
+        for (
+            let y = 0;
+            y < height;
+            y += gridSize
+        ) {
+
+            ctx.beginPath();
+
+            ctx.moveTo(
+                0,
+                y
+            );
+
+            ctx.lineTo(
+                width,
+                y
+            );
+
+            ctx.stroke();
+        }
+    };
+
+
+const oldDrawGame =
+    drawGame;
+
+
+drawGame =
+    function(
+        now
+    ) {
+
+        const width =
+            logicalCanvasWidth();
+
+        const height =
+            logicalCanvasHeight();
+
+
+        ctx.clearRect(
+            0,
+            0,
+            width,
+            height
+        );
+
+
+        drawGameBackground();
+
+
+        if (
+            apple
+        ) {
+
+            drawApple(
+                apple.x,
+                apple.y
+            );
+        }
+
+
+        for (
+            const worm
+            of worms.values()
+        ) {
+
+            if (
+                worm.alive
+            ) {
+
+                drawWorm(
+                    worm,
+                    now
+                );
+            }
+        }
+    };
+
+</script>
+
+</body>
+</html>
