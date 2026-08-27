@@ -635,6 +635,8 @@ button {
             <div id="stick"></div>
         </div>
 
+        <button id="knifeButton" type="button" aria-label="Use knife">🔪</button>
+
     </div>
 
 
@@ -725,6 +727,9 @@ let joystickPointer =
 let lastSteerTime =
     0;
 
+let hasKnife =
+    false;
+
 
 /* ============================================================
    ELEMENTS
@@ -807,6 +812,9 @@ const scoreEl =
 const aliveState =
     document.getElementById("aliveState");
 
+const knifeButton =
+    document.getElementById("knifeButton");
+
 const joystick =
     document.getElementById("joystick");
 
@@ -821,6 +829,9 @@ const resultScore =
 
 const newGameButton =
     document.getElementById("newGameButton");
+
+
+updateKnifeButton();
 
 
 /* ============================================================
@@ -1145,6 +1156,32 @@ function handleMessage(
 
 
     if (
+        message.type === "knife_ready"
+    ) {
+
+        hasKnife =
+            true;
+
+        updateKnifeButton();
+
+        return;
+    }
+
+
+    if (
+        message.type === "knife_used"
+    ) {
+
+        hasKnife =
+            false;
+
+        updateKnifeButton();
+
+        return;
+    }
+
+
+    if (
         message.type === "tv_state"
     ) {
 
@@ -1177,6 +1214,11 @@ function handleMessage(
 
         aliveState.textContent =
             "ALIVE";
+
+        hasKnife =
+            false;
+
+        updateKnifeButton();
 
         showScreen(
             "lobby"
@@ -1800,6 +1842,54 @@ function showController() {
         +
         color;
 }
+
+
+function updateKnifeButton() {
+
+    if (
+        !knifeButton
+    ) {
+
+        return;
+    }
+
+    knifeButton.classList.toggle(
+        "ready",
+        hasKnife
+    );
+
+    knifeButton.disabled =
+        !hasKnife;
+}
+
+
+knifeButton.addEventListener(
+    "click",
+    event => {
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        if (
+            !hasKnife
+        ) {
+
+            return;
+        }
+
+        hasKnife =
+            false;
+
+        updateKnifeButton();
+
+        send(
+            {
+                type:
+                    "use_knife"
+            }
+        );
+    }
+);
 
 
 /* ============================================================
