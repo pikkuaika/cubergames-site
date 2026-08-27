@@ -432,7 +432,7 @@
 
   var gameRunning = false;
   var lastFrame = 0;
-  var apple = null;
+  var apples = [];
   var worms = {};
   var wormOrder = [];
   var gamePlayers = [];
@@ -446,6 +446,7 @@
   var WALL_REVEAL_MS = 6500;
   var GIANT_MS = 6000;
   var SPEED_MS = 5500;
+  var KNIFE_MS = 2800;
 
   var lobbyEl = document.getElementById("lobby");
   var countdownEl = document.getElementById("countdown");
@@ -614,6 +615,11 @@
 
     if (msg.type === "steer") {
       handleSteer(msg);
+      return;
+    }
+
+    if (msg.type === "knife_use") {
+      activateKnife(msg);
       return;
     }
 
@@ -788,7 +794,8 @@
       wormOrder.push(String(gamePlayers[i].id));
     }
 
-    spawnApple();
+    apples = [];
+    spawnApplesToMax();
     powerUp = null;
     wallsVisibleUntil = 0;
     nextPowerUpAt = new Date().getTime() + randomBetween(7000, 12000);
@@ -839,7 +846,10 @@
       targetLength: startLength,
       mouthUntil: 0,
       giantUntil: 0,
-      speedUntil: 0
+      speedUntil: 0,
+      hasKnife: false,
+      knifeUntil: 0,
+      knifeLastCutAt: 0
     };
   }
 
@@ -978,23 +988,27 @@
         worm.body.pop();
       }
 
-      if (apple) {
+      var appleIndex;
+
+      for (appleIndex = apples.length - 1; appleIndex >= 0; appleIndex--) {
         appleDistance = wrappedDistance(
           worm.x, worm.y,
-          apple.x, apple.y,
+          apples[appleIndex].x, apples[appleIndex].y,
           w, h
         );
 
         if (appleDistance < getWormRadius(worm, now) + 15) {
           /*
-            Apples no longer decide the winner.
-            They only make the worm longer.
+            Apples only grow the worm.
+            Up to two apples are present at the same time.
           */
           worm.score += 1;
           worm.targetLength += 5;
           worm.mouthUntil = now + 320;
-          spawnApple();
+          apples.splice(appleIndex, 1);
+          spawnApplesToMax();
           renderScoreboard();
+          break;
         }
       }
 
@@ -1018,12 +1032,30 @@
             worm.speedUntil = now + SPEED_MS;
           }
 
+          if (powerUp.type === "knife") {
+            /*
+              The knife is stored until the player chooses to use it
+              from the phone controller.
+            */
+            if (worm.hasKnife) {
+              continue;
+            }
+
+            worm.hasKnife = true;
+
+            sendSocket({
+              type: "knife_collected",
+              playerId: worm.id
+            });
+          }
+
           powerUp = null;
           nextPowerUpAt = now + randomBetween(9000, 15000);
         }
       }
     }
 
+    checkKnifeCuts(now);
     checkWormCollisions(now);
 
     for (i = 0; i < wormOrder.length; i++) {
@@ -1047,6 +1079,111 @@
 
     if (aliveCount === 0) {
       finishGame(null);
+    }
+  }
+
+  function activateKnife(msg) {
+    var worm = worms[String(Number(msg.playerId))];
+
+    if (!gameRunning || !worm || !worm.alive || !worm.hasKnife) {
+      return;
+    }
+
+    worm.hasKnife = false;
+    worm.knifeUntil = new Date().getTime() + KNIFE_MS;
+    worm.knifeLastCutAt = 0;
+  }
+
+  function checkKnifeCuts(now) {
+    var a, b, i;
+    var attacker, victim, point;
+    var w = getGameWidth();
+    var h = getGameHeight();
+    var forward;
+    var side;
+    var knifeX;
+    var knifeY;
+    var cutIndex;
+    var minLength = 8;
+
+    for (a = 0; a < wormOrder.length; a++) {
+      attacker = worms[wormOrder[a]];
+
+      if (
+        !attacker ||
+        !attacker.alive ||
+        now >= attacker.knifeUntil ||
+        now - attacker.knifeLastCutAt < 260
+      ) {
+        continue;
+      }
+
+      forward = now < attacker.giantUntil ? 72 : 48;
+      side = now < attacker.giantUntil ? 31 : 20;
+
+      knifeX =
+        attacker.x +
+        Math.cos(attacker.angle) * forward -
+        Math.sin(attacker.angle) * side;
+
+      knifeY =
+        attacker.y +
+        Math.sin(attacker.angle) * forward +
+        Math.cos(attacker.angle) * side;
+
+      if (knifeX < 0) knifeX += w;
+      if (knifeX >= w) knifeX -= w;
+      if (knifeY < 0) knifeY += h;
+      if (knifeY >= h) knifeY -= h;
+
+      for (b = 0; b < wormOrder.length; b++) {
+        victim = worms[wormOrder[b]];
+
+        if (
+          !victim ||
+          !victim.alive ||
+          victim.id === attacker.id
+        ) {
+          continue;
+        }
+
+        cutIndex = -1;
+
+        for (i = 4; i < victim.body.length; i++) {
+          point = victim.body[i];
+
+          if (
+            wrappedDistance(
+              knifeX, knifeY,
+              point.x, point.y,
+              w, h
+            ) < getBodyRadius(victim, now) + 13
+          ) {
+            cutIndex = i;
+            break;
+          }
+        }
+
+        if (cutIndex >= 0) {
+          /*
+            Cut off the tail from the hit point.
+            The victim survives, but loses worm size.
+          */
+          victim.targetLength = Math.max(minLength, cutIndex);
+          victim.body = victim.body.slice(0, victim.targetLength);
+
+          victim.score = Math.max(
+            0,
+            Math.floor(
+              (victim.targetLength - 16) / 5
+            )
+          );
+
+          attacker.knifeLastCutAt = now;
+          renderScoreboard();
+          break;
+        }
+      }
     }
   }
 
@@ -1077,8 +1214,9 @@
 
         /*
           A worm can never die by touching its own body.
+          While its knife is active it can slash through enemy bodies.
         */
-        if (worm.id === other.id) {
+        if (worm.id === other.id || now < worm.knifeUntil) {
           continue;
         }
 
@@ -1124,11 +1262,18 @@
     var w = getGameWidth();
     var h = getGameHeight();
 
-    apple = {
+    apples.push({
       x: randomBetween(padding, Math.max(padding + 1, w - padding)),
       y: randomBetween(padding, Math.max(padding + 1, h - padding))
-    };
+    });
   }
+
+  function spawnApplesToMax() {
+    while (apples.length < 2) {
+      spawnApple();
+    }
+  }
+
 
   function spawnPowerUp() {
     var padding = 90;
@@ -1138,12 +1283,14 @@
     var roll = Math.random();
     var type = "walls";
 
-    if (roll < .34) {
+    if (roll < .25) {
       type = "walls";
-    } else if (roll < .67) {
+    } else if (roll < .50) {
       type = "giant";
-    } else {
+    } else if (roll < .75) {
       type = "speed";
+    } else {
+      type = "knife";
     }
 
     powerUp = {
@@ -1223,7 +1370,7 @@
       ctx.lineTo(0, 17);
       ctx.stroke();
 
-    } else {
+    } else if (item.type === "speed") {
       /* SPEED power-up: cyan lightning bolt */
       ctx.strokeStyle = "#42e8ff";
       ctx.fillStyle = "rgba(66,232,255,.18)";
@@ -1244,6 +1391,34 @@
       ctx.lineTo(3, -5);
       ctx.closePath();
       ctx.fill();
+
+    } else {
+      /* KNIFE power-up */
+      ctx.strokeStyle = "#ff596e";
+      ctx.fillStyle = "rgba(255,89,110,.18)";
+      ctx.lineWidth = 4;
+
+      ctx.beginPath();
+      ctx.arc(0, 0, 22, 0, Math.PI * 2, false);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.save();
+      ctx.rotate(-.55);
+
+      ctx.fillStyle = "#e8edf5";
+      ctx.beginPath();
+      ctx.moveTo(-2, -17);
+      ctx.lineTo(7, 7);
+      ctx.lineTo(0, 13);
+      ctx.lineTo(-7, 7);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.fillStyle = "#6f3d2f";
+      ctx.fillRect(-4, 9, 8, 12);
+
+      ctx.restore();
     }
 
     ctx.restore();
@@ -1277,8 +1452,8 @@
     drawBackground(w, h);
     drawRevealedWalls(now, w, h);
 
-    if (apple) {
-      drawApple(apple.x, apple.y);
+    for (i = 0; i < apples.length; i++) {
+      drawApple(apples[i].x, apples[i].y);
     }
 
     if (powerUp) {
@@ -1442,6 +1617,40 @@
         false
       );
       ctx.stroke();
+    }
+
+    if (now < worm.knifeUntil) {
+      /*
+        Small arm + knife on the right side of the worm's head.
+        It rotates with the head because we are already in head space.
+      */
+      ctx.save();
+      ctx.rotate(.55);
+
+      ctx.strokeStyle = palette.dark;
+      ctx.lineWidth = giant ? 9 : 5;
+      ctx.lineCap = "round";
+      ctx.beginPath();
+      ctx.moveTo(5, giant ? 25 : 14);
+      ctx.lineTo(18, giant ? 34 : 22);
+      ctx.stroke();
+
+      ctx.translate(20, giant ? 35 : 23);
+      ctx.rotate(-.85);
+
+      ctx.fillStyle = "#8a4b36";
+      ctx.fillRect(-4, -2, 8, giant ? 17 : 12);
+
+      ctx.fillStyle = "#eef3fa";
+      ctx.beginPath();
+      ctx.moveTo(-5, 0);
+      ctx.lineTo(0, giant ? -31 : -23);
+      ctx.lineTo(7, -3);
+      ctx.lineTo(0, 4);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.restore();
     }
 
     ctx.restore();
@@ -1637,7 +1846,7 @@
     worms = {};
     wormOrder = [];
     gamePlayers = [];
-    apple = null;
+    apples = [];
     powerUp = null;
     nextPowerUpAt = 0;
     wallsVisibleUntil = 0;
