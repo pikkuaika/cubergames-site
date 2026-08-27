@@ -445,6 +445,7 @@
   var wallsVisibleUntil = 0;
   var WALL_REVEAL_MS = 6500;
   var GIANT_MS = 6000;
+  var SPEED_MS = 5500;
 
   var lobbyEl = document.getElementById("lobby");
   var countdownEl = document.getElementById("countdown");
@@ -837,7 +838,8 @@
       body: body,
       targetLength: startLength,
       mouthUntil: 0,
-      giantUntil: 0
+      giantUntil: 0,
+      speedUntil: 0
     };
   }
 
@@ -941,17 +943,34 @@
       diff = clamp(diff, -maxTurn, maxTurn);
       worm.angle += diff;
 
-      worm.x += Math.cos(worm.angle) * worm.speed * dt;
-      worm.y += Math.sin(worm.angle) * worm.speed * dt;
+      var currentSpeed =
+        now < worm.speedUntil
+          ? worm.speed * 1.75
+          : worm.speed;
+
+      worm.x += Math.cos(worm.angle) * currentSpeed * dt;
+      worm.y += Math.sin(worm.angle) * currentSpeed * dt;
 
       /*
-        Screen edges are portals:
-        leaving one side brings the worm back from the opposite side.
+        Normally screen edges are portals.
+        While the WALLS power-up is active, the visible walls become lethal.
       */
-      if (worm.x < 0) worm.x += w;
-      if (worm.x >= w) worm.x -= w;
-      if (worm.y < 0) worm.y += h;
-      if (worm.y >= h) worm.y -= h;
+      if (now < wallsVisibleUntil) {
+        if (
+          worm.x < 10 ||
+          worm.x > w - 10 ||
+          worm.y < 10 ||
+          worm.y > h - 10
+        ) {
+          killWorm(worm);
+          continue;
+        }
+      } else {
+        if (worm.x < 0) worm.x += w;
+        if (worm.x >= w) worm.x -= w;
+        if (worm.y < 0) worm.y += h;
+        if (worm.y >= h) worm.y -= h;
+      }
 
       worm.body.unshift({ x: worm.x, y: worm.y });
 
@@ -993,6 +1012,10 @@
 
           if (powerUp.type === "giant") {
             worm.giantUntil = now + GIANT_MS;
+          }
+
+          if (powerUp.type === "speed") {
+            worm.speedUntil = now + SPEED_MS;
           }
 
           powerUp = null;
@@ -1112,8 +1135,19 @@
     var w = getGameWidth();
     var h = getGameHeight();
 
+    var roll = Math.random();
+    var type = "walls";
+
+    if (roll < .34) {
+      type = "walls";
+    } else if (roll < .67) {
+      type = "giant";
+    } else {
+      type = "speed";
+    }
+
     powerUp = {
-      type: Math.random() < .5 ? "walls" : "giant",
+      type: type,
       x: randomBetween(padding, Math.max(padding + 1, w - padding)),
       y: randomBetween(padding, Math.max(padding + 1, h - padding))
     };
@@ -1164,7 +1198,8 @@
       ctx.fillRect(-11, -12, 7, 24);
       ctx.fillRect(4, -12, 7, 24);
       ctx.fillRect(-11, -4, 22, 8);
-    } else {
+
+    } else if (item.type === "giant") {
       ctx.strokeStyle = "#ffb347";
       ctx.fillStyle = "rgba(255,179,71,.18)";
       ctx.lineWidth = 4;
@@ -1187,6 +1222,28 @@
       ctx.moveTo(0, -17);
       ctx.lineTo(0, 17);
       ctx.stroke();
+
+    } else {
+      /* SPEED power-up: cyan lightning bolt */
+      ctx.strokeStyle = "#42e8ff";
+      ctx.fillStyle = "rgba(66,232,255,.18)";
+      ctx.lineWidth = 4;
+
+      ctx.beginPath();
+      ctx.arc(0, 0, 22, 0, Math.PI * 2, false);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.fillStyle = "#8ff5ff";
+      ctx.beginPath();
+      ctx.moveTo(4, -17);
+      ctx.lineTo(-9, 2);
+      ctx.lineTo(-1, 2);
+      ctx.lineTo(-6, 17);
+      ctx.lineTo(12, -5);
+      ctx.lineTo(3, -5);
+      ctx.closePath();
+      ctx.fill();
     }
 
     ctx.restore();
@@ -1336,6 +1393,18 @@
     ctx.save();
     ctx.translate(worm.x, worm.y);
     ctx.rotate(worm.angle);
+
+    if (now < worm.speedUntil) {
+      ctx.save();
+      ctx.strokeStyle = "rgba(66,232,255,.75)";
+      ctx.lineWidth = giant ? 8 : 5;
+      ctx.shadowBlur = 18;
+      ctx.shadowColor = "#42e8ff";
+      ctx.beginPath();
+      ctx.arc(0, 0, headRadius + (giant ? 9 : 6), 0, Math.PI * 2, false);
+      ctx.stroke();
+      ctx.restore();
+    }
 
     ctx.fillStyle = palette.body;
     ctx.beginPath();
