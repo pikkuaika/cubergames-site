@@ -33,7 +33,7 @@
       min-height: 360px;
     }
 
-    #lobby, #countdown, #game, #gameOver {
+    #setup, #lobby, #countdown, #game, #gameOver {
       position: absolute;
       left: 0;
       top: 0;
@@ -41,8 +41,102 @@
       height: 100%;
     }
 
-    #lobby {
+    #setup {
       display: block;
+      text-align: center;
+      padding: 7% 6%;
+      background: rgba(2,4,8,.97);
+      z-index: 20;
+    }
+
+    .setupWrap {
+      max-width: 760px;
+      margin: 0 auto;
+    }
+
+    .setupTitle {
+      font-size: 56px;
+      font-weight: 900;
+      letter-spacing: 8px;
+    }
+
+    .setupSub {
+      margin-top: 8px;
+      font-size: 18px;
+      letter-spacing: 7px;
+      opacity: .5;
+    }
+
+    .setupButtons {
+      margin-top: 70px;
+    }
+
+    .setupButton {
+      display: block;
+      width: 100%;
+      max-width: 520px;
+      margin: 0 auto 22px;
+      padding: 22px 18px;
+      border: 2px solid rgba(255,255,255,.22);
+      border-radius: 16px;
+      background: rgba(255,255,255,.08);
+      color: #fff;
+      font: inherit;
+      font-size: 24px;
+      font-weight: 900;
+      letter-spacing: 3px;
+      cursor: pointer;
+    }
+
+    .setupButton:focus {
+      outline: 4px solid rgba(66,232,255,.65);
+      background: rgba(66,232,255,.13);
+    }
+
+    .displayJoinBox {
+      display: none;
+      margin-top: 24px;
+    }
+
+    #displayRoomInput {
+      width: 100%;
+      max-width: 360px;
+      padding: 18px;
+      text-align: center;
+      text-transform: uppercase;
+      border-radius: 14px;
+      border: 2px solid rgba(255,255,255,.25);
+      background: #090d15;
+      color: #fff;
+      font-size: 34px;
+      font-weight: 900;
+      letter-spacing: 8px;
+    }
+
+    #displayJoinError {
+      min-height: 24px;
+      margin-top: 12px;
+      color: #ff6b7f;
+      font-size: 16px;
+    }
+
+    #mirrorBadge {
+      display: none;
+      position: absolute;
+      left: 20px;
+      bottom: 14px;
+      z-index: 12;
+      padding: 7px 10px;
+      border-radius: 8px;
+      background: rgba(0,0,0,.45);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      opacity: .75;
+    }
+
+    #lobby {
+      display: none;
       padding: 3.5% 5%;
     }
 
@@ -341,6 +435,24 @@
 
 <div id="app">
 
+  <div id="setup">
+    <div class="setupWrap">
+      <div class="setupTitle">CUBER</div>
+      <div class="setupSub">SNAKE 360</div>
+
+      <div class="setupButtons">
+        <button id="createGameButton" class="setupButton" type="button">CREATE GAME</button>
+        <button id="showDisplayJoinButton" class="setupButton" type="button">JOIN DISPLAY</button>
+
+        <div id="displayJoinBox" class="displayJoinBox">
+          <input id="displayRoomInput" type="text" maxlength="8" autocomplete="off" placeholder="ROOM">
+          <button id="joinDisplayButton" class="setupButton" type="button" style="margin-top:18px;">CONNECT DISPLAY</button>
+          <div id="displayJoinError"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="lobby">
 
     <div class="title">CUBER</div>
@@ -397,6 +509,8 @@
   </div>
 
 
+  <div id="mirrorBadge">REMOTE DISPLAY</div>
+
   <div id="gameOver">
     <div class="overWrap">
       <div class="overSmall">GAME OVER</div>
@@ -426,6 +540,9 @@
   };
 
   var roomCode = "";
+  var displayMode = "setup"; /* setup | host | mirror */
+  var mirrorSourceWidth = 0;
+  var mirrorSourceHeight = 0;
   var socket = null;
   var roomState = null;
   var reconnectTimer = null;
@@ -438,6 +555,7 @@
   var gamePlayers = [];
   var gameLoopTimer = null;
   var lastStateBroadcast = 0;
+  var lastWorldBroadcast = 0;
 
   /* Power-ups */
   var powerUp = null;
@@ -448,6 +566,14 @@
   var SPEED_MS = 5500;
   var KNIFE_MS = 15000;
 
+  var setupEl = document.getElementById("setup");
+  var createGameButtonEl = document.getElementById("createGameButton");
+  var showDisplayJoinButtonEl = document.getElementById("showDisplayJoinButton");
+  var displayJoinBoxEl = document.getElementById("displayJoinBox");
+  var displayRoomInputEl = document.getElementById("displayRoomInput");
+  var joinDisplayButtonEl = document.getElementById("joinDisplayButton");
+  var displayJoinErrorEl = document.getElementById("displayJoinError");
+  var mirrorBadgeEl = document.getElementById("mirrorBadge");
   var lobbyEl = document.getElementById("lobby");
   var countdownEl = document.getElementById("countdown");
   var countdownNumberEl = document.getElementById("countdownNumber");
@@ -488,6 +614,96 @@
       xhr.send(null);
     } catch (e) {
       onError();
+    }
+  }
+
+  function hideSetup() {
+    setupEl.style.display = "none";
+  }
+
+  function startHostDisplay() {
+    displayMode = "host";
+    mirrorBadgeEl.style.display = "none";
+    hideSetup();
+    startTV();
+  }
+
+  function joinMirrorDisplay(code) {
+    code = String(code || "")
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, "")
+      .slice(0, 8);
+
+    if (code.length < 4) {
+      displayJoinErrorEl.innerHTML = "Enter the room code shown on the main TV";
+      return;
+    }
+
+    displayMode = "mirror";
+    roomCode = code;
+    displayJoinErrorEl.innerHTML = "";
+    mirrorBadgeEl.style.display = "block";
+    hideSetup();
+
+    roomCodeEl.innerHTML = roomCode;
+    updateQR();
+    showLobby();
+    setStatus("Connecting remote display...");
+    connectTV();
+  }
+
+  function getQueryParam(name) {
+    var query = String(window.location.search || "").replace(/^\?/, "");
+    var parts = query ? query.split("&") : [];
+    var i;
+    var pair;
+
+    for (i = 0; i < parts.length; i++) {
+      pair = parts[i].split("=");
+      if (decodeURIComponent(pair[0] || "") === name) {
+        return decodeURIComponent((pair[1] || "").replace(/\+/g, " "));
+      }
+    }
+    return "";
+  }
+
+  function initializeDisplayChooser() {
+    var displayRoom = getQueryParam("display");
+    var roomParam = getQueryParam("room");
+    var displayFlag = getQueryParam("mode");
+
+    createGameButtonEl.onclick = function () {
+      startHostDisplay();
+    };
+
+    showDisplayJoinButtonEl.onclick = function () {
+      displayJoinBoxEl.style.display = "block";
+      try { displayRoomInputEl.focus(); } catch (e) {}
+    };
+
+    joinDisplayButtonEl.onclick = function () {
+      joinMirrorDisplay(displayRoomInputEl.value);
+    };
+
+    displayRoomInputEl.onkeyup = function (event) {
+      var key = event && (event.keyCode || event.which);
+      displayRoomInputEl.value = String(displayRoomInputEl.value || "")
+        .toUpperCase()
+        .replace(/[^A-Z0-9]/g, "")
+        .slice(0, 8);
+
+      if (key === 13) {
+        joinMirrorDisplay(displayRoomInputEl.value);
+      }
+    };
+
+    if (displayRoom) {
+      joinMirrorDisplay(displayRoom);
+      return;
+    }
+
+    if (roomParam && displayFlag === "display") {
+      joinMirrorDisplay(roomParam);
     }
   }
 
@@ -561,7 +777,7 @@
       API_WS +
       "/room/" +
       encodeURIComponent(roomCode) +
-      "?role=tv";
+      "?role=" + (displayMode === "mirror" ? "display" : "tv");
 
     try {
       socket = new WebSocket(wsUrl);
@@ -572,7 +788,7 @@
     }
 
     socket.onopen = function () {
-      setStatus("ONLINE");
+      setStatus(displayMode === "mirror" ? "REMOTE DISPLAY ONLINE" : "HOST DISPLAY ONLINE");
     };
 
     socket.onmessage = function (event) {
@@ -609,16 +825,35 @@
     }
 
     if (msg.type === "countdown_start") {
-      beginCountdown(msg);
+      if (displayMode === "mirror") {
+        beginMirrorCountdown(msg);
+      } else {
+        beginCountdown(msg);
+      }
+      return;
+    }
+
+    if (msg.type === "world_state") {
+      applyMirrorWorldState(msg.state || {});
+      return;
+    }
+
+    if (msg.type === "game_over") {
+      if (displayMode === "mirror") {
+        gameRunning = false;
+        showGameOver(msg.results || [], msg.winner || null);
+      }
       return;
     }
 
     if (msg.type === "steer") {
+      if (displayMode === "mirror") return;
       handleSteer(msg);
       return;
     }
 
     if (msg.type === "knife_use") {
+      if (displayMode === "mirror") return;
       activateKnife(msg);
       return;
     }
@@ -757,6 +992,92 @@
     }
 
     tick();
+  }
+
+  function beginMirrorCountdown(msg) {
+    var duration = Number(msg.duration) || 2400;
+    var started = new Date().getTime();
+
+    gameRunning = false;
+    lobbyEl.style.display = "none";
+    gameEl.style.display = "none";
+    gameOverEl.style.display = "none";
+    countdownEl.style.display = "block";
+
+    function tickMirror() {
+      var elapsed = new Date().getTime() - started;
+      var remaining = duration - elapsed;
+      var ratio;
+
+      if (remaining <= 0) {
+        countdownNumberEl.innerHTML = "GO!";
+        setTimeout(function () {
+          countdownEl.style.display = "none";
+          gameEl.style.display = "block";
+          setStatus("WAITING FOR HOST VIDEO STATE...");
+        }, 250);
+        return;
+      }
+
+      ratio = remaining / duration;
+      if (ratio > .66) countdownNumberEl.innerHTML = "3";
+      else if (ratio > .33) countdownNumberEl.innerHTML = "2";
+      else countdownNumberEl.innerHTML = "1";
+
+      setTimeout(tickMirror, 60);
+    }
+
+    tickMirror();
+  }
+
+  function applyMirrorWorldState(state) {
+    var localNow;
+    var sentAt;
+    var offset;
+    var i;
+    var worm;
+    var key;
+
+    if (displayMode !== "mirror" || !state) {
+      return;
+    }
+
+    mirrorSourceWidth = Number(state.width) || 1280;
+    mirrorSourceHeight = Number(state.height) || 720;
+    canvas.width = mirrorSourceWidth;
+    canvas.height = mirrorSourceHeight;
+
+    worms = state.worms || {};
+    wormOrder = state.wormOrder || [];
+    apples = state.apples || [];
+    powerUp = state.powerUp || null;
+
+    localNow = new Date().getTime();
+    sentAt = Number(state.sentAt) || localNow;
+    offset = localNow - sentAt;
+
+    wallsVisibleUntil = (Number(state.wallsVisibleUntil) || 0) + offset;
+
+    for (i = 0; i < wormOrder.length; i++) {
+      key = String(wormOrder[i]);
+      worm = worms[key];
+      if (!worm) continue;
+
+      worm.mouthUntil = (Number(worm.mouthUntil) || 0) + offset;
+      worm.giantUntil = (Number(worm.giantUntil) || 0) + offset;
+      worm.speedUntil = (Number(worm.speedUntil) || 0) + offset;
+      worm.knifeUntil = (Number(worm.knifeUntil) || 0) + offset;
+    }
+
+    gameRunning = true;
+    lobbyEl.style.display = "none";
+    countdownEl.style.display = "none";
+    gameOverEl.style.display = "none";
+    gameEl.style.display = "block";
+
+    renderScoreboard();
+    drawGame(localNow);
+    setStatus("REMOTE DISPLAY ONLINE");
   }
 
   function startGame() {
@@ -918,6 +1239,11 @@
     if (now - lastStateBroadcast > 220) {
       lastStateBroadcast = now;
       broadcastTVState();
+    }
+
+    if (displayMode === "host" && now - lastWorldBroadcast > 66) {
+      lastWorldBroadcast = now;
+      broadcastWorldState(now);
     }
 
     gameLoopTimer = setTimeout(gameLoop, 16);
@@ -1712,6 +2038,26 @@
     }
   }
 
+  function broadcastWorldState(now) {
+    if (!gameRunning || displayMode !== "host") {
+      return;
+    }
+
+    sendSocket({
+      type: "world_state",
+      state: {
+        sentAt: now,
+        width: getGameWidth(),
+        height: getGameHeight(),
+        worms: worms,
+        wormOrder: wormOrder,
+        apples: apples,
+        powerUp: powerUp,
+        wallsVisibleUntil: wallsVisibleUntil
+      }
+    });
+  }
+
   function broadcastTVState() {
     var list = [];
     var i;
@@ -1850,6 +2196,10 @@
     powerUp = null;
     nextPowerUpAt = 0;
     wallsVisibleUntil = 0;
+    if (displayMode !== "mirror") {
+      mirrorSourceWidth = 0;
+      mirrorSourceHeight = 0;
+    }
     scoreboardEl.innerHTML = "";
     finalScoresEl.innerHTML = "";
   }
@@ -1876,10 +2226,16 @@
   }
 
   function getGameWidth() {
+    if (displayMode === "mirror" && mirrorSourceWidth) {
+      return mirrorSourceWidth;
+    }
     return window.innerWidth || document.documentElement.clientWidth || 1280;
   }
 
   function getGameHeight() {
+    if (displayMode === "mirror" && mirrorSourceHeight) {
+      return mirrorSourceHeight;
+    }
     return window.innerHeight || document.documentElement.clientHeight || 720;
   }
 
@@ -1929,11 +2285,10 @@
     }, false);
   }
 
-  startTV();
+  initializeDisplayChooser();
 
 })();
 </script>
 
 </body>
 </html>
-
