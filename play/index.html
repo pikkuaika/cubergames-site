@@ -1551,10 +1551,20 @@
           continue;
         }
 
-        hitDistance =
-          getWormRadius(worm, now) +
-          getBodyRadius(other, now) -
-          4;
+        /*
+          In SOLO, self-collision always uses the worm's normal collision
+          size. GIANT only changes the visual/body size against walls and
+          other worms. This prevents picking up GIANT from instantly
+          counting the nearby neck/body as a self-hit.
+        */
+        if (worm.id === other.id) {
+          hitDistance = 20 + 12 - 4;
+        } else {
+          hitDistance =
+            getWormRadius(worm, now) +
+            getBodyRadius(other, now) -
+            4;
+        }
 
         /*
           Ignore the body points immediately behind the head so normal
