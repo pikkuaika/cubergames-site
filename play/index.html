@@ -1291,7 +1291,7 @@
         Normally screen edges are portals.
         While the WALLS power-up is active, the visible walls become lethal.
       */
-      if (now < wallsVisibleUntil) {
+      if (isSoloMode() || now < wallsVisibleUntil) {
         if (
           worm.x < 10 ||
           worm.x > w - 10 ||
@@ -1601,15 +1601,28 @@
   }
 
 
+  function isSoloMode() {
+    return !!(roomState && roomState.mode === "SOLO");
+  }
+
+
   function spawnPowerUp() {
     var padding = 90;
     var w = getGameWidth();
     var h = getGameHeight();
 
     var roll = Math.random();
-    var type = "walls";
+    var type;
 
-    if (roll < .25) {
+    /*
+      SOLO:
+      - walls are permanently active, so no WALLS pickup is needed
+      - knife is multiplayer-only
+      - only GIANT and SPEED can spawn
+    */
+    if (isSoloMode()) {
+      type = roll < .50 ? "giant" : "speed";
+    } else if (roll < .25) {
       type = "walls";
     } else if (roll < .50) {
       type = "giant";
@@ -1753,11 +1766,15 @@
   function drawRevealedWalls(now, w, h) {
     var alpha;
 
-    if (now >= wallsVisibleUntil) {
-      return;
-    }
+    if (isSoloMode()) {
+      alpha = 1;
+    } else {
+      if (now >= wallsVisibleUntil) {
+        return;
+      }
 
-    alpha = Math.min(1, (wallsVisibleUntil - now) / 700);
+      alpha = Math.min(1, (wallsVisibleUntil - now) / 700);
+    }
 
     ctx.save();
     ctx.strokeStyle = "rgba(185,124,255," + (0.35 + alpha * 0.45) + ")";
