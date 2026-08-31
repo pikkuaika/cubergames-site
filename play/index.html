@@ -1539,10 +1539,15 @@
         }
 
         /*
-          A worm can never die by touching its own body.
+          MULTIPLAYER: a worm can pass through its own body.
+          SOLO: touching its own body kills it.
           While its knife is active it can slash through enemy bodies.
         */
-        if (worm.id === other.id || now < worm.knifeUntil) {
+        if (now < worm.knifeUntil) {
+          continue;
+        }
+
+        if (worm.id === other.id && !isSoloMode()) {
           continue;
         }
 
@@ -1551,7 +1556,13 @@
           getBodyRadius(other, now) -
           4;
 
-        for (i = 3; i < other.body.length; i += 2) {
+        /*
+          Ignore the body points immediately behind the head so normal
+          forward movement does not count as a self-collision.
+        */
+        var collisionStart = worm.id === other.id ? 12 : 3;
+
+        for (i = collisionStart; i < other.body.length; i += 2) {
           point = other.body[i];
 
           if (
